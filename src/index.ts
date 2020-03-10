@@ -18,9 +18,9 @@ const create_chart = () => {
       data: {
         labels: [],
         datasets: [
-          { label: 'Confirmed',data: [], fill: false, borderColor: 'blue', borderWidth: 1.5},
-          { label: 'Recovered',data: [], fill: false, borderColor: 'green', borderWidth: 1.5},
-          { label: 'Deaths',data: [], fill: false, borderColor: 'red', borderWidth: 1.5}
+          { label: 'Confirmed',data: [], fill: false, backgroundColor: 'white', borderColor: 'blue', borderWidth: 1.5},
+          { label: 'Recovered',data: [], fill: false, backgroundColor: 'white', borderColor: 'green', borderWidth: 1.5},
+          { label: 'Deaths',data: [], fill: false, backgroundColor: 'white', borderColor: 'red', borderWidth: 1.5}
         ]
       }
     })
@@ -78,6 +78,7 @@ const load_data = async (type : 'confirmed' | 'recovered' | 'deaths') => {
 const update_chart = () => {
   const country = (<HTMLSelectElement>document.querySelector('#country')).value
   const type = (<HTMLSelectElement>document.querySelector('#type')).value
+  const scale = (<HTMLSelectElement>document.querySelector('#scale')).value
 
   const confirmed = (<HTMLInputElement>document.querySelector('#confirmed')).checked
   const recovered = (<HTMLInputElement>document.querySelector('#recovered')).checked
@@ -99,6 +100,22 @@ const update_chart = () => {
     chart.data.datasets[0].hidden = !confirmed
     chart.data.datasets[1].hidden = !recovered
     chart.data.datasets[2].hidden = !deaths
+
+    chart.options.title = {display: true, text: `${country} (${type})`}
+
+    if (scale == 'logarithmic')
+      chart.options.scales = {
+        yAxes: [{
+          type: 'logarithmic',          
+          ticks: {
+              autoSkip: false,
+              callback: function (value, index, values) {
+                return Number.isInteger(Math.log10(value)) || index == 0 ? value : ''
+              }
+          }
+        }]
+      }
+    else chart.options.scales = undefined
 
     chart.update()
   }
@@ -124,7 +141,8 @@ document.querySelector('#country')?.addEventListener('change', update_chart)
 document.querySelector('#type')?.addEventListener('change', update_chart)
 document.querySelector('#scale')?.addEventListener('change', update_chart)
 
-
 document.querySelector('#confirmed')?.addEventListener('change', update_chart)
 document.querySelector('#recovered')?.addEventListener('change', update_chart)
 document.querySelector('#deaths')?.addEventListener('change', update_chart)
+
+document.querySelector('#scale')?.addEventListener('change', update_chart)

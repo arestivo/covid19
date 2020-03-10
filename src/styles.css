@@ -1,3 +1,18 @@
 body {
   padding: 1em;
 }
+
+form {
+  display: table;
+  margin: 0 auto;
+  background-color: #EEE;
+  padding: 0.5em;
+}
+
+form div{
+  display: inline;
+}
+
+form input{
+  margin: 0.5em;
+}
