@@ -1,4 +1,6 @@
 body {
+  max-width: 80em;
+  margin: 0 auto;
   padding: 1em;
 }
 
@@ -10,7 +12,8 @@ form {
 }
 
 form div{
-  display: inline;
+  display: table;
+  margin: 0 auto;
 }
 
 form input{

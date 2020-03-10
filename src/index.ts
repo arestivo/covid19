@@ -22,7 +22,11 @@ const create_chart = () => {
           { label: 'Recovered',data: [], fill: false, backgroundColor: 'white', borderColor: 'green', borderWidth: 1.5},
           { label: 'Deaths',data: [], fill: false, backgroundColor: 'white', borderColor: 'red', borderWidth: 1.5}
         ]
+      },
+      options: {
+        responsive: true
       }
+
     })
   }
   return undefined
