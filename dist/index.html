@@ -1,0 +1,50 @@
+<!DOCTYPE html lang="EN">
+<html>
+
+<head>
+  <title>COVID-19 Charts</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+  <h1>COVID-19 Charts</h1>
+  <div class="pure-g">
+    <div class="pure-u-1 pure-u-md-2-5 pure-u-lg-1-5">
+      <div class="l-box">
+        <form class="pure-form-stacked">
+
+            <select id="country">
+            </select>
+
+            <div class="pure-control-group">
+              <select id="type">
+                <option value="cumulative">Cumulative</option>
+                <option value="daily">Daily</option>
+                <option value="difference">Difference</option>
+                <option value="fraction">Fraction</option>
+              </select>
+
+              <select id="scale">
+                <option>Linear</option>
+                <option>Logarithmic</option>
+              </select>
+            </div>
+
+            <label for="confirmed">Confirmed</label><input type="checkbox" id="confirmed" checked>
+            <label for="recovered">Recovered</label><input type="checkbox" id="recovered" checked>
+            <label for="deaths">Deaths</label><input type="checkbox" id="deaths" checked>
+
+        </form>
+      </div>
+    </div>
+
+    <div class="pure-u-1 pure-u-md-3-5 pure-u-lg-4-5">
+      <div class="l-box">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+  </div>
+<script type="text/javascript" src="bundle.js"></script></body>
+
+</html>
