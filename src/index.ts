@@ -91,7 +91,7 @@ const update_chart = () => {
   let f = (v : value, i : number, a : value[]) : number => v.daily
   if (type == 'daily') f = (v, i, a) => v.daily
   if (type == 'cumulative') f = (v, i, a) => v.cumulative
-  if (type == 'growth') f = (v, i, a) => (i > 0 && a[i - 1].cumulative != 0 ? a[i].daily / a[i - 1].cumulative : 0)
+  if (type == 'growth') f = (v, i, a) => (i > 0 && a[i - 1].cumulative != 0 ? a[i].daily / a[i - 1].cumulative * 100 : 0)
   if (type == 'difference') f = (v, i, a) => a[i].daily - (i > 0 ? a[i - 1].daily : 0)
 
   if (chart != undefined && chart.data.datasets != undefined) {
