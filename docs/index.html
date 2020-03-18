@@ -9,7 +9,7 @@
 
 <body>
   <form class="pure-form">
-    <div class="pure-control-group">
+    <div class="pure-control">
       <select id="country">
         <option value="" disabled selected hidden>Add country...</option>
       </select>
@@ -25,14 +25,16 @@
         <option value="linear">Linear</option>
         <option value="logarithmic">Logarithmic</option>
       </select>
+  
+      <select id="data-type">
+        <option value="confirmed">Confirmed</option>
+        <option value="recovered">Recovered</option>
+        <option value="deaths">Deaths</option>
+      </select>
+  
+      <label for="align">Align<input type="checkbox" id="align"></label>
     </div>
 
-    <div class="pure-control-group">
-      <label for="confirmed">Confirmed</label><input name="type" type="radio" id="confirmed" checked>
-      <label for="recovered">Recovered</label><input name="type" type="radio" id="recovered">
-      <label for="deaths">Deaths</label><input name="type" type="radio" id="deaths">
-      <label for="align">Align</label><input type="checkbox" id="align">
-    </div>
   </form>
 
   <div id="container">

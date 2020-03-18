@@ -87,10 +87,7 @@ const load_data = async (type : 'confirmed' | 'recovered' | 'deaths') => {
 const update_chart = () => {
   const type = (<HTMLSelectElement>document.querySelector('#type')).value
   const scale = (<HTMLSelectElement>document.querySelector('#scale')).value
-
-  const confirmed = (<HTMLInputElement>document.querySelector('#confirmed')).checked
-  const recovered = (<HTMLInputElement>document.querySelector('#recovered')).checked
-  const deaths = (<HTMLInputElement>document.querySelector('#deaths')).checked
+  const datatype = (<HTMLSelectElement>document.querySelector('#data-type')).value
 
   const align = (<HTMLInputElement>document.querySelector('#align')).checked
 
@@ -111,9 +108,9 @@ const update_chart = () => {
 
         let values : number[] | undefined = []
 
-        if (confirmed) values = data.confirmed.get(country.toString())?.map(f)
-        if (recovered) values = data.recovered.get(country.toString())?.map(f)
-        if (deaths) values = data.deaths.get(country.toString())?.map(f)
+        if (datatype == 'confirmed') values = data.confirmed.get(country.toString())?.map(f)
+        if (datatype == 'recovered') values = data.recovered.get(country.toString())?.map(f)
+        if (datatype == 'deaths') values = data.deaths.get(country.toString())?.map(f)
 
         if (align) while (values && values?.length > 0 && values[1] == 0)
           values.shift()
@@ -190,10 +187,7 @@ const toggle_country = () => {
 document.querySelector('#country')?.addEventListener('change', toggle_country)
 document.querySelector('#type')?.addEventListener('change', update_chart)
 document.querySelector('#scale')?.addEventListener('change', update_chart)
-
-document.querySelector('#confirmed')?.addEventListener('change', update_chart)
-document.querySelector('#recovered')?.addEventListener('change', update_chart)
-document.querySelector('#deaths')?.addEventListener('change', update_chart)
+document.querySelector('#data-type')?.addEventListener('change', update_chart)
 
 document.querySelector('#align')?.addEventListener('change', update_chart)
 
