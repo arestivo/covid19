@@ -28,7 +28,8 @@ const create_chart = () => {
         datasets: []
       },
       options: {
-        responsive: true
+        responsive: true,
+        maintainAspectRatio: false
       }
 
     })

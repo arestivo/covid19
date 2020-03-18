@@ -19,3 +19,13 @@ form div{
 form input{
   margin: 0.5em;
 }
+
+html {
+  height: 90%;
+}
+
+body {
+  min-height: 90%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
