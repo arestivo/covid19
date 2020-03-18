@@ -112,7 +112,7 @@ const update_chart = () => {
         if (datatype == 'recovered') values = data.recovered.get(country.toString())?.map(f)
         if (datatype == 'deaths') values = data.deaths.get(country.toString())?.map(f)
 
-        if (align) while (values && values?.length > 0 && values[1] == 0)
+        if (align) while (values && values?.length > 0 && values[1] < 5)
           values.shift()
 
         chart.data.datasets[chart.data.datasets.length - 1].data = values
