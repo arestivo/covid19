@@ -7,7 +7,15 @@ import * as Chart from 'chart.js'
 
 import { parse } from 'papaparse'
 
+const randomColor = require('randomcolor')
+
 interface value { daily : number ; cumulative : number }
+
+const countries : Set<String> = new Set()
+
+countries.add('Portugal')
+countries.add('Italy')
+countries.add('Spain')
 
 const create_chart = () => {
   const ctx = document.getElementById('chart')
@@ -17,11 +25,7 @@ const create_chart = () => {
       type: 'line',
       data: {
         labels: [],
-        datasets: [
-          { label: 'Confirmed',data: [], fill: false, backgroundColor: 'white', borderColor: 'blue', borderWidth: 1.5},
-          { label: 'Recovered',data: [], fill: false, backgroundColor: 'white', borderColor: 'green', borderWidth: 1.5},
-          { label: 'Deaths',data: [], fill: false, backgroundColor: 'white', borderColor: 'red', borderWidth: 1.5}
-        ]
+        datasets: []
       },
       options: {
         responsive: true
@@ -80,13 +84,14 @@ const load_data = async (type : 'confirmed' | 'recovered' | 'deaths') => {
 }
 
 const update_chart = () => {
-  const country = (<HTMLSelectElement>document.querySelector('#country')).value
   const type = (<HTMLSelectElement>document.querySelector('#type')).value
   const scale = (<HTMLSelectElement>document.querySelector('#scale')).value
 
   const confirmed = (<HTMLInputElement>document.querySelector('#confirmed')).checked
   const recovered = (<HTMLInputElement>document.querySelector('#recovered')).checked
   const deaths = (<HTMLInputElement>document.querySelector('#deaths')).checked
+
+  const align = (<HTMLInputElement>document.querySelector('#align')).checked
 
   let f = (v : value, i : number, a : value[]) : number => v.daily
   if (type == 'daily') f = (v, i, a) => v.daily
@@ -97,15 +102,39 @@ const update_chart = () => {
   if (chart != undefined && chart.data.datasets != undefined) {
     chart.data.labels = labels
 
-    chart.data.datasets[0].data = data.confirmed.get(country)?.map(f)
-    chart.data.datasets[1].data = data.recovered.get(country)?.map(f)
-    chart.data.datasets[2].data = data.deaths.get(country)?.map(f)
+    chart.data.datasets.length = 0
 
-    chart.data.datasets[0].hidden = !confirmed
-    chart.data.datasets[1].hidden = !recovered
-    chart.data.datasets[2].hidden = !deaths
+    countries.forEach((country) => {
+      if (chart != undefined && chart.data.datasets != undefined) {
+        chart.data.datasets.push({ label: country.toString(), data: [], fill: false, backgroundColor: 'white', borderColor: randomColor({luminosity : 'dark'}), borderWidth: 1.5})
 
-    chart.options.title = {display: true, text: `${country} (${type})`}
+        let values : number[] | undefined = []
+
+        if (confirmed) values = data.confirmed.get(country.toString())?.map(f)
+        if (recovered) values = data.recovered.get(country.toString())?.map(f)
+        if (deaths) values = data.deaths.get(country.toString())?.map(f)
+
+        if (align) while (values && values?.length > 0 && values[1] == 0)
+          values.shift()
+
+        chart.data.datasets[chart.data.datasets.length - 1].data = values
+      }
+    })
+
+    if (align) {
+      const labels = []
+      let largest = 0
+      for (let dataset of chart.data.datasets)
+        if (dataset.data && dataset.data.length > largest)
+          largest = dataset.data.length
+
+      for (let i = 0; i < largest; i++)
+        labels.push(`Day ${i}`)
+
+      chart.data.labels = labels
+    }
+
+    chart.options.title = {display: true, text: `${Array.from(countries).join(', ')}`}
 
     if (scale == 'logarithmic')
       chart.options.scales = {
@@ -141,12 +170,30 @@ Promise.all(promises).then(() => {
   update_chart()
 })
 
-document.querySelector('#country')?.addEventListener('change', update_chart)
+const toggle_country = () => {
+  const selector = <HTMLSelectElement>document.querySelector('#country')
+  const country = selector.value
+
+  if (country == 'Add country...') return
+
+  if (countries.has(country)) 
+    countries.delete(country)
+  else
+    countries.add(country)
+
+  selector.selectedIndex = 0
+
+  update_chart()
+}
+
+document.querySelector('#country')?.addEventListener('change', toggle_country)
 document.querySelector('#type')?.addEventListener('change', update_chart)
 document.querySelector('#scale')?.addEventListener('change', update_chart)
 
 document.querySelector('#confirmed')?.addEventListener('change', update_chart)
 document.querySelector('#recovered')?.addEventListener('change', update_chart)
 document.querySelector('#deaths')?.addEventListener('change', update_chart)
+
+document.querySelector('#align')?.addEventListener('change', update_chart)
 
 document.querySelector('#scale')?.addEventListener('change', update_chart)

@@ -12,6 +12,7 @@
 
     <div class="pure-control-group">
       <select id="country">
+        <option value="" disabled selected hidden>Add country...</option>
       </select>
 
       <select id="type">
@@ -28,13 +29,14 @@
     </div>
 
     <div class="pure-control-group">
-      <label for="confirmed">Confirmed</label><input type="checkbox" id="confirmed" checked>
-      <label for="recovered">Recovered</label><input type="checkbox" id="recovered" checked>
-      <label for="deaths">Deaths</label><input type="checkbox" id="deaths" checked>
+      <label for="confirmed">Confirmed</label><input name="type" type="radio" id="confirmed" checked>
+      <label for="recovered">Recovered</label><input name="type" type="radio" id="recovered">
+      <label for="deaths">Deaths</label><input name="type" type="radio" id="deaths">
+      <label for="align">Align</label><input type="checkbox" id="align">
     </div>
   </form>
 
-    <canvas id="chart"></canvas>
+  <canvas id="chart"></canvas>
 <script type="text/javascript" src="bundle.js"></script></body>
 
 </html>
