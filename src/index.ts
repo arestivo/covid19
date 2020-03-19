@@ -14,6 +14,7 @@ interface value { daily : number ; cumulative : number }
 const countries : Set<String> = new Set()
 
 countries.add('Portugal')
+countries.add('China')
 countries.add('Italy')
 countries.add('Spain')
 
@@ -89,6 +90,12 @@ const update_chart = () => {
   const datatype = (<HTMLSelectElement>document.querySelector('#data-type')).value
 
   const align = (<HTMLInputElement>document.querySelector('#align')).checked
+  const alignstart = (<HTMLInputElement>document.querySelector('#alignstart')).value
+
+  if (align)
+    document.querySelector('#alignstart')?.removeAttribute('disabled')
+  else
+    document.querySelector('#alignstart')?.setAttribute('disabled', 'disabled')
 
   let f = (v : value, i : number, a : value[]) : number => v.daily
   if (type == 'daily') f = (v, i, a) => v.daily
@@ -110,7 +117,7 @@ const update_chart = () => {
         if (datatype == 'recovered') values = data.recovered.get(country.toString())?.map(f)
         if (datatype == 'deaths') values = data.deaths.get(country.toString())?.map(f)
 
-        if (align) while (values && values?.length > 0 && values[1] == 0)
+        if (align) while (values && values?.length > 0 && values[1] < parseInt(alignstart))
           values.shift()
 
         const color = palette[chart.data.datasets.length].hex()
@@ -151,8 +158,18 @@ const update_chart = () => {
   }
 }
 
+const compare_countries = (c1 : string, c2 : string) => {
+  const v1 = data.confirmed.get(c1)
+  const v2 = data.confirmed.get(c2)
+
+  if (v1 && v2)
+    return v2[v2.length - 1].cumulative - v1[v1.length - 1].cumulative
+  else
+    return 0
+}
+
 const update_countries = () => {
-  const countries = Array.from(data.confirmed.keys()).sort()
+  const countries = Array.from(data.confirmed.keys()).sort((c1, c2) => compare_countries(c1, c2))
   const select = document.querySelector('#country')
   countries.forEach(country => {
     const option = document.createElement('OPTION')
@@ -189,5 +206,6 @@ document.querySelector('#scale')?.addEventListener('change', update_chart)
 document.querySelector('#data-type')?.addEventListener('change', update_chart)
 
 document.querySelector('#align')?.addEventListener('change', update_chart)
+document.querySelector('#alignstart')?.addEventListener('input', update_chart)
 
 document.querySelector('#scale')?.addEventListener('change', update_chart)

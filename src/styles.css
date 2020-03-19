@@ -4,11 +4,21 @@ body {
 }
 
 form {
-  width: 100%;
-  display: table;
+  width: 95%;
   margin: 0 auto;
-  background-color: #EEE;
   padding: 0.5em;
+}
+
+canvas {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+div.pure-control {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto auto;
+  align-items: center; 
+  justify-content: center;
 }
 
 form div{
@@ -32,4 +42,16 @@ body {
 
 div.pretty {
   top: 0.3em;
+}
+
+@media all and (max-width: 1300px) {
+  div.pure-control {
+    grid-template-columns: auto auto auto;
+  }
+}
+
+@media all and (max-width: 600px) {
+  div.pure-control {
+    grid-template-columns: auto auto;
+  }
 }
