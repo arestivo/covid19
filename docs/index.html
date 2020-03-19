@@ -5,6 +5,7 @@
   <title>COVID-19 Charts</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretty-checkbox@3.0/dist/pretty-checkbox.min.css">
 </head>
 
 <body>
@@ -32,9 +33,15 @@
         <option value="deaths">Deaths</option>
       </select>
   
-      <label for="align">Align<input type="checkbox" id="align"></label>
-    </div>
+      	
+      <div class="pretty p-switch">
+        <input type="checkbox" id="align">
+        <div class="state">
+            <label>Align</label>
+        </div>
+      </div>
 
+    </div>
   </form>
 
   <div id="container">

@@ -1,10 +1,10 @@
 body {
   max-width: 80em;
   margin: 0 auto;
-  padding: 1em;
 }
 
 form {
+  width: 100%;
   display: table;
   margin: 0 auto;
   background-color: #EEE;
@@ -28,4 +28,8 @@ body {
   min-height: 90%;
   display: grid;
   grid-template-rows: auto 1fr;
+}
+
+div.pretty {
+  top: 0.3em;
 }

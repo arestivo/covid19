@@ -7,7 +7,7 @@ import * as Chart from 'chart.js'
 
 import { parse } from 'papaparse'
 
-const randomColor = require('randomcolor')
+const distinctColors = require ('distinct-colors')
 
 interface value { daily : number ; cumulative : number }
 
@@ -17,12 +17,12 @@ countries.add('Portugal')
 countries.add('Italy')
 countries.add('Spain')
 
-const create_chart = () => {
+const create_chart = (type : string) => {
   const ctx = document.getElementById('chart')
 
   if (ctx instanceof HTMLCanvasElement) {
     return new Chart(ctx, {
-      type: 'line',
+      type,
       data: {
         labels: [],
         datasets: []
@@ -37,8 +37,7 @@ const create_chart = () => {
   return undefined
 }
 
-const chart = create_chart()
-
+let chart = create_chart('line')
 let labels : string[] = []
 let data : { 
   confirmed : Map<string, value[]>, 
@@ -97,15 +96,14 @@ const update_chart = () => {
   if (type == 'growth') f = (v, i, a) => (i > 0 && a[i - 1].cumulative != 0 ? a[i].daily / a[i - 1].cumulative * 100 : 0)
   if (type == 'difference') f = (v, i, a) => a[i].daily - (i > 0 ? a[i - 1].daily : 0)
 
+  const palette = distinctColors.default({count: countries.size, chromaMin: 50, lightMin: 20, lightMax: 80})
+
   if (chart != undefined && chart.data.datasets != undefined) {
     chart.data.labels = labels
-
     chart.data.datasets.length = 0
 
     countries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
-        chart.data.datasets.push({ label: country.toString(), data: [], fill: false, backgroundColor: 'white', borderColor: randomColor({luminosity : 'dark'}), borderWidth: 1.5})
-
         let values : number[] | undefined = []
 
         if (datatype == 'confirmed') values = data.confirmed.get(country.toString())?.map(f)
@@ -115,7 +113,8 @@ const update_chart = () => {
         if (align) while (values && values?.length > 0 && values[1] == 0)
           values.shift()
 
-        chart.data.datasets[chart.data.datasets.length - 1].data = values
+        const color = palette[chart.data.datasets.length].hex()
+        chart.data.datasets.push({ label: country.toString(), data: values, fill: false, backgroundColor: color, borderColor: color, borderWidth: 1.5})
       }
     })
 
@@ -127,7 +126,7 @@ const update_chart = () => {
           largest = dataset.data.length
 
       for (let i = 0; i < largest; i++)
-        labels.push(`Day ${i}`)
+        labels.push(`${i}`)
 
       chart.data.labels = labels
     }
