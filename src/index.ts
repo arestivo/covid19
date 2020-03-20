@@ -61,11 +61,17 @@ const join_data = (original : value[] | undefined, values : value[]) : value[] =
   })
 }
 
+const fix_country = (country : string) => {
+  if (country == 'Mainland China') return 'China'
+  if (country == 'Korea, South') return 'South Korea'
+  return country
+}
+
 const extract_data = (json : any[]) => {
   const data : Map<string, value[]> = new Map
   json.forEach(line => {
     const state = line[0]
-    const country = line[1] == 'Mainland China' ? 'China' : line[1]
+    const country = fix_country(line[1])
 
     const values = line.splice(4).map((v : string) => parseInt(v)).map(function (v : number, i : number, a : []) : value {
       return {daily : a[i] - (i > 0 ? a[i - 1] : 0), cumulative : a[i]}
@@ -73,6 +79,19 @@ const extract_data = (json : any[]) => {
     if (state != '') data.set(country, join_data(data.get(country), values))
     else data.set(country, values)
   })
+
+  const world : value[] = []
+
+  data.forEach((country) => {
+    country.forEach((day, index) => {
+      while (world.length <= index) world.push({daily: 0, cumulative: 0})
+      world[index].daily += day.daily
+      world[index].cumulative += day.cumulative
+    })
+  })
+
+  data.set('World', world)
+
   return data
 }
 
@@ -162,18 +181,22 @@ const compare_countries = (c1 : string, c2 : string) => {
   const v1 = data.confirmed.get(c1)
   const v2 = data.confirmed.get(c2)
 
-  if (v1 && v2)
-    return v2[v2.length - 1].cumulative - v1[v1.length - 1].cumulative
-  else
-    return 0
+  if (v1 && v2 && countries.has(c1) && !countries.has(c2)) return -1
+  if (v1 && v2 && countries.has(c2) && !countries.has(c1)) return 1
+
+  if (v1 && v2) return v2[v2.length - 1].cumulative - v1[v1.length - 1].cumulative
+
+  return 0
 }
 
 const update_countries = () => {
-  const countries = Array.from(data.confirmed.keys()).sort((c1, c2) => compare_countries(c1, c2))
+  const existing = Array.from(data.confirmed.keys()).sort((c1, c2) => compare_countries(c1, c2))
   const select = document.querySelector('#country')
-  countries.forEach(country => {
-    const option = document.createElement('OPTION')
-    option.innerText = country
+  if (select) select.innerHTML = '<option value="" disabled selected hidden>Countries...</option>'
+  existing.forEach(country => {
+    const option = <HTMLOptionElement>document.createElement('OPTION')
+    option.innerText = country.concat(countries.has(country) ? ' *' : '')
+    option.value = country
     select?.appendChild(option)
   })
 } 
@@ -188,7 +211,7 @@ const toggle_country = () => {
   const selector = <HTMLSelectElement>document.querySelector('#country')
   const country = selector.value
 
-  if (country == 'Add country...') return
+  if (selector.selectedIndex == 0) return
 
   if (countries.has(country)) 
     countries.delete(country)
@@ -197,6 +220,7 @@ const toggle_country = () => {
 
   selector.selectedIndex = 0
 
+  update_countries()
   update_chart()
 }
 
