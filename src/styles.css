@@ -1,25 +1,33 @@
+html {
+  background-color: #333;
+}
+
 body {
-  max-width: 80em;
   margin: 0 auto;
+}
+
+main {
+  background-color: #444;
 }
 
 form {
+  max-width: 80em;
   width: 95%;
   margin: 0 auto;
   padding: 0.5em;
-  background-color: #EEE;
 }
 
 canvas {
-  max-width: 100%;
+  max-width: 80em;
   margin: 0 auto;
+  background-color: #333;
 }
 
 div.pure-control {
   display: grid;
   grid-template-columns: auto auto auto auto auto;
   align-items: center; 
-  justify-content: center;
+  justify-content: space-between;
 }
 
 form div{

@@ -16,6 +16,9 @@ const countries : Set<String> = new Set()
 countries.add('Portugal')
 
 const create_chart = (type : string) => {
+  Chart.defaults.global.defaultFontColor = '#EEE'
+  Chart.defaults.scale.gridLines.color = "#666"
+
   const ctx = document.getElementById('chart')
 
   if (ctx instanceof HTMLCanvasElement) {
@@ -23,13 +26,13 @@ const create_chart = (type : string) => {
       type,
       data: {
         labels: [],
-        datasets: []
+        datasets: [],
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        tooltips: { mode: 'index' }
       }
-
     })
   }
   return undefined
@@ -128,7 +131,7 @@ const update_chart = () => {
   if (type == 'growth') f = (v, i, a) => (i > 0 && a[i - 1].cumulative != 0 ? a[i].daily / a[i - 1].cumulative * 100 : 0)
   if (type == 'difference') f = (v, i, a) => a[i].daily - (i > 0 ? a[i - 1].daily : 0)
 
-  const palette = distinctColors.default({count: countries.size, chromaMin: 50, lightMin: 20, lightMax: 80})
+  const palette = distinctColors.default({count: countries.size, chromaMin: 50, lightMin: 50, lightMax: 100})
 
   if (chart != undefined && chart.data.datasets != undefined) {
     chart.data.labels = labels

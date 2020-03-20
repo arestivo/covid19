@@ -2,39 +2,40 @@
 <html>
 
 <head>
-  <title>COVID-19 Charts</title>
+  <title>COVID-19 Country Comparison Tool</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>
-  <form class="pure-form">
-    <div class="pure-control">
-      <select id="country"></select>
-
-      <select id="type">
-        <option value="cumulative">Cumulative</option>
-        <option value="daily">Daily</option>
-        <option value="difference">Difference</option>
-        <option value="growth">Growth (%)</option>
-      </select>
-
-      <select id="scale">
-        <option value="linear">Linear</option>
-        <option value="logarithmic">Logarithmic</option>
-      </select>
+  <main>
+    <form class="pure-form">
+      <div class="pure-control">
+        <select id="country"></select>
   
-      <select id="data-type">
-        <option value="confirmed">Confirmed</option>
-        <option value="recovered">Recovered</option>
-        <option value="deaths">Deaths</option>
-        <option value="cfr">CFR</option>
-      </select>
+        <select id="type">
+          <option value="cumulative">Cumulative</option>
+          <option value="daily">Daily</option>
+          <option value="difference">Difference</option>
+          <option value="growth">Growth (%)</option>
+        </select>
   
-      <input id="alignstart" type="number" min="0" step="50" value="" placeholder="align at">
-
-    </div>
-  </form>
+        <select id="scale">
+          <option value="linear">Linear</option>
+          <option value="logarithmic">Logarithmic</option>
+        </select>
+    
+        <select id="data-type">
+          <option value="confirmed">Confirmed</option>
+          <option value="recovered">Recovered</option>
+          <option value="deaths">Deaths</option>
+          <option value="cfr">CFR</option>
+        </select>
+    
+        <input id="alignstart" type="number" min="0" step="50" value="" placeholder="align at">
+      </div>
+    </form>
+  </main>
 
   <div id="container">
     <canvas id="chart"></canvas>
