@@ -57,7 +57,7 @@ const extract_labels = (json : any[]) => json[0].splice(4)
 const join_data = (original : value[] | undefined, values : value[]) : value[] => {
   if (original == undefined) return values
   return original.map(function (o, i) { 
-    return { daily: o.daily + values[i].daily, cumulative: o.cumulative + values[i].cumulative}
+    return { daily: o.daily + (isNaN(values[i].daily) ? 0 : values[i].daily), cumulative: o.cumulative + (isNaN(values[i].cumulative) ? 0 : values[i].cumulative)}
   })
 }
 
