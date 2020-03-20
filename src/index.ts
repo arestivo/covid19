@@ -2,6 +2,7 @@ import 'purecss/build/pure-min.css'
 import 'purecss/build/grids-responsive-min.css'
 
 import './styles.css'
+import './pretty-checkbox.min.css'
 
 import * as Chart from 'chart.js'
 
@@ -14,9 +15,6 @@ interface value { daily : number ; cumulative : number }
 const countries : Set<String> = new Set()
 
 countries.add('Portugal')
-countries.add('China')
-countries.add('Italy')
-countries.add('Spain')
 
 const create_chart = (type : string) => {
   const ctx = document.getElementById('chart')
@@ -47,7 +45,7 @@ let data : {
 } = { confirmed : new Map, recovered : new Map, deaths : new Map }
 
 const ajax = async (type: String) => {
-  return fetch(`data/${type}.csv`)
+  return fetch(`https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-${type}.csv`)
     .then(response => response.text())
     .then(csv => parse(csv).data)
 }
@@ -97,8 +95,13 @@ const extract_data = (json : any[]) => {
   return data
 }
 
+const capitalize = (s : string) => {
+  if (typeof s !== 'string') return ''
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
 const load_data = async (type : 'confirmed' | 'recovered' | 'deaths') => {
-  return ajax(type).then(json => {
+  return ajax(capitalize(type)).then(json => {
     labels = extract_labels(json)
     json.shift()
     data[type] = extract_data(json)
@@ -137,6 +140,16 @@ const update_chart = () => {
         if (datatype == 'confirmed') values = data.confirmed.get(country.toString())?.map(f)
         if (datatype == 'recovered') values = data.recovered.get(country.toString())?.map(f)
         if (datatype == 'deaths') values = data.deaths.get(country.toString())?.map(f)
+        if (datatype == 'cfr') {
+          const confirmed = data.confirmed.get(country.toString())
+          const deaths = data.deaths.get(country.toString())
+
+          const cfr = confirmed?.map((c, idx) => {
+            return {cumulative : deaths ? deaths[idx].cumulative / c.cumulative * 100 : 0, daily : deaths ? deaths[idx].daily / c.daily * 100 : 0}
+          })
+
+          values = cfr?.map(f)
+        }
 
         if (align) while (values && values?.length > 0 && values[1] < parseInt(alignstart))
           values.shift()
