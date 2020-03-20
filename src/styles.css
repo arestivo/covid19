@@ -17,7 +17,7 @@ canvas {
 
 div.pure-control {
   display: grid;
-  grid-template-columns: auto auto auto auto auto auto;
+  grid-template-columns: auto auto auto auto auto;
   align-items: center; 
   justify-content: center;
 }
@@ -41,10 +41,6 @@ body {
   grid-template-rows: auto 1fr;
 }
 
-div.pretty {
-  top: 0.3em;
-}
-
 @media all and (max-width: 1300px) {
   div.pure-control {
     grid-template-columns: auto auto auto;
@@ -54,5 +50,11 @@ div.pretty {
 @media all and (max-width: 600px) {
   div.pure-control {
     grid-template-columns: auto auto;
+  }
+}
+
+@media all and (max-width: 480px) {
+  div.pure-control {
+    grid-template-columns: auto;
   }
 }

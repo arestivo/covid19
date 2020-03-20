@@ -2,7 +2,6 @@ import 'purecss/build/pure-min.css'
 import 'purecss/build/grids-responsive-min.css'
 
 import './styles.css'
-import './pretty-checkbox.min.css'
 
 import * as Chart from 'chart.js'
 
@@ -120,13 +119,8 @@ const update_chart = () => {
   const scale = (<HTMLSelectElement>document.querySelector('#scale')).value
   const datatype = (<HTMLSelectElement>document.querySelector('#data-type')).value
 
-  const align = (<HTMLInputElement>document.querySelector('#align')).checked
   const alignstart = (<HTMLInputElement>document.querySelector('#alignstart')).value
-
-  if (align)
-    document.querySelector('#alignstart')?.removeAttribute('disabled')
-  else
-    document.querySelector('#alignstart')?.setAttribute('disabled', 'disabled')
+  const align = parseInt(alignstart) > 0
 
   let f = (v : value, i : number, a : value[]) : number => v.daily
   if (type == 'daily') f = (v, i, a) => v.daily
@@ -251,7 +245,6 @@ document.querySelector('#type')?.addEventListener('change', update_chart)
 document.querySelector('#scale')?.addEventListener('change', update_chart)
 document.querySelector('#data-type')?.addEventListener('change', update_chart)
 
-document.querySelector('#align')?.addEventListener('change', update_chart)
 document.querySelector('#alignstart')?.addEventListener('input', update_chart)
 
 document.querySelector('#scale')?.addEventListener('change', update_chart)
