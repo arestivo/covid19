@@ -81,16 +81,23 @@ const extract_data = (json : any[]) => {
   })
 
   const world : value[] = []
+  const worldminuschina : value[] = []
 
   data.forEach((country, c) => {
     country.forEach((day, index) => {
       while (world.length <= index) world.push({daily: 0, cumulative: 0})
+      while (worldminuschina.length <= index) worldminuschina.push({daily: 0, cumulative: 0})
       world[index].daily += !isNaN(day.daily) ? day.daily : 0
       world[index].cumulative += !isNaN(day.cumulative) ? day.cumulative : 0
+      if (c != 'China') {
+        worldminuschina[index].daily += !isNaN(day.daily) ? day.daily : 0
+        worldminuschina[index].cumulative += !isNaN(day.cumulative) ? day.cumulative : 0  
+      }
     })
   })
 
   data.set('World', world)
+  data.set('World minus China', worldminuschina)
 
   return data
 }
