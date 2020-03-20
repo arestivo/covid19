@@ -60,9 +60,3 @@ body {
     grid-template-columns: auto auto;
   }
 }
-
-@media all and (max-width: 480px) {
-  div.pure-control {
-    grid-template-columns: auto;
-  }
-}
