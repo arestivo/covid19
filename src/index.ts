@@ -155,6 +155,21 @@ const update_chart = () => {
           values = cfr?.map(f)
         }
 
+        if (datatype == 'active') {
+          const confirmed = data.confirmed.get(country.toString())
+          const recovered = data.recovered.get(country.toString())
+          const deaths = data.deaths.get(country.toString())
+
+          const cfr = confirmed?.map((c, idx) => {
+            return { 
+              cumulative : (recovered && deaths) ? (c.cumulative - deaths[idx].cumulative - recovered[idx].cumulative) : 0, 
+              daily : (recovered && deaths) ? (c.daily - deaths[idx].daily - recovered[idx].daily) : 0
+            }
+          })
+
+          values = cfr?.map(f)
+        }
+
         if (align) while (values && values?.length > 0 && values[1] < parseInt(alignstart))
           values.shift()
 
