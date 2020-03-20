@@ -73,6 +73,8 @@ const extract_data = (json : any[]) => {
     const state = line[0]
     const country = fix_country(line[1])
 
+    if (country == undefined) return
+
     const values = line.splice(4).map((v : string) => parseInt(v)).map(function (v : number, i : number, a : []) : value {
       return {daily : a[i] - (i > 0 ? a[i - 1] : 0), cumulative : a[i]}
     })
@@ -82,11 +84,11 @@ const extract_data = (json : any[]) => {
 
   const world : value[] = []
 
-  data.forEach((country) => {
+  data.forEach((country, c) => {
     country.forEach((day, index) => {
       while (world.length <= index) world.push({daily: 0, cumulative: 0})
-      world[index].daily += day.daily
-      world[index].cumulative += day.cumulative
+      world[index].daily += !isNaN(day.daily) ? day.daily : 0
+      world[index].cumulative += !isNaN(day.cumulative) ? day.cumulative : 0
     })
   })
 
@@ -183,7 +185,7 @@ const compare_countries = (c1 : string, c2 : string) => {
 
   if (v1 && v2 && countries.has(c1) && !countries.has(c2)) return -1
   if (v1 && v2 && countries.has(c2) && !countries.has(c1)) return 1
-
+  
   if (v1 && v2) return v2[v2.length - 1].cumulative - v1[v1.length - 1].cumulative
 
   return 0
