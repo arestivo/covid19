@@ -75,3 +75,10 @@ body {
     grid-column-start: 2;
   }
 }
+
+h1 {
+  color: #EEE;
+  text-align: center;
+  font-size: 1em;
+  margin: 0.5em;
+}
