@@ -27,7 +27,9 @@ div.pure-control {
   display: grid;
   grid-template-columns: auto auto auto auto auto;
   align-items: center; 
-  justify-content: space-between;
+  justify-content: center;
+  column-gap: 0.5em;
+  row-gap: 0.5em;
 }
 
 form div{
@@ -49,14 +51,27 @@ body {
   grid-template-rows: auto 1fr;
 }
 
+#alignstart {
+  margin: 0;
+}
+
+
 @media all and (max-width: 1300px) {
   div.pure-control {
     grid-template-columns: auto auto auto;
+  }
+
+  #container {
+    margin: 0 0.5em;
   }
 }
 
 @media all and (max-width: 600px) {
   div.pure-control {
     grid-template-columns: auto auto;
+  }
+
+  #alignstart {
+    grid-column-start: 2;
   }
 }

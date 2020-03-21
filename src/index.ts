@@ -75,7 +75,7 @@ const extract_data = (json : any[]) => {
 
     if (country == undefined) return
 
-    const values = line.splice(4).map((v : string) => parseInt(v)).map(function (v : number, i : number, a : []) : value {
+    const values = line.splice(4).map((v : string) => parseInt(v)).map(function (_v : number, i : number, a : []) : value {
       return {daily : a[i] - (i > 0 ? a[i - 1] : 0), cumulative : a[i]}
     })
     if (state != '') data.set(country, join_data(data.get(country), values))
@@ -117,6 +117,96 @@ const load_data = async (type : 'confirmed' | 'recovered' | 'deaths') => {
   })
 }
 
+const make_title = (type: string, datatype: string, alignstart: string) => {
+  if (parseInt(alignstart) > 0)
+    return `${capitalize(datatype)} (${type}) aligned to first ${alignstart}`
+  else
+    return `${capitalize(datatype)} (${type})`
+}
+
+const type_function = (type: string) => {
+  if (type == 'daily') 
+    return (v: value, _i: number, _a: value[]) => v.daily
+  
+  if (type == 'cumulative') 
+    return (v: value, _i: number, _a: value[]) => v.cumulative
+  
+  if (type == 'growth') 
+    return (_v: value, i: number, a: value[]) => (i > 0 && a[i - 1].cumulative != 0 ? a[i].daily / a[i - 1].cumulative * 100 : 0)
+  
+  if (type == 'difference') 
+    return (_v: value, i: number, a: value[]) => a[i].daily - (i > 0 ? a[i - 1].daily : 0)
+  
+    return (v : value, _i : number, _a : value[]) : number => v.daily
+}
+
+const get_palette = (count : number) => distinctColors.default({count, chromaMin: 50, lightMin: 50, lightMax: 100})
+
+const get_values = (datatype : string, country : string, f : any) => {
+  let values : number[] | undefined = []
+
+  const confirmed = data.confirmed.get(country)
+  const recovered = data.recovered.get(country)
+  const deaths = data.deaths.get(country)
+
+  if (datatype == 'confirmed') values = data.confirmed.get(country)?.map(f)
+  if (datatype == 'recovered') values = data.recovered.get(country)?.map(f)
+  if (datatype == 'deaths') values = data.deaths.get(country)?.map(f)
+  if (datatype == 'cfr') {
+    const cfr = confirmed?.map((c, idx) => {
+      return {cumulative : deaths ? deaths[idx].cumulative / c.cumulative * 100 : 0, daily : deaths ? deaths[idx].daily / c.daily * 100 : 0}
+    })
+
+    values = cfr?.map(f)
+  }
+
+  if (datatype == 'active') {
+    const cfr = confirmed?.map((c, idx) => {
+      return { 
+        cumulative : (recovered && deaths) ? (c.cumulative - deaths[idx].cumulative - recovered[idx].cumulative) : 0, 
+        daily : (recovered && deaths) ? (c.daily - deaths[idx].daily - recovered[idx].daily) : 0
+      }
+    })
+
+    values = cfr?.map(f)
+  }
+
+  return values
+}
+
+const align_chart = () => {
+  const labels = []
+
+  if (chart?.data?.datasets) {
+    let largest = 0
+
+    for (let dataset of chart.data.datasets)
+      if (dataset.data && dataset.data.length > largest)
+        largest = dataset.data.length
+  
+    for (let i = 0; i < largest; i++)
+        labels.push(`${i}`)
+  
+    chart.data.labels = labels
+  }
+}
+
+const logarithmic_chart = () => {
+  if (chart) {
+    chart.options.scales = {
+      yAxes: [{
+        type: 'logarithmic',          
+        ticks: {
+            autoSkip: false,
+            callback: function (value, index, _values) {
+              return Number.isInteger(Math.log10(value)) || index == 0 ? value : ''
+            }
+        }
+      }]
+    }
+  }
+}
+
 const update_chart = () => {
   const type = (<HTMLSelectElement>document.querySelector('#type')).value
   const scale = (<HTMLSelectElement>document.querySelector('#scale')).value
@@ -125,50 +215,19 @@ const update_chart = () => {
   const alignstart = (<HTMLInputElement>document.querySelector('#alignstart')).value
   const align = parseInt(alignstart) > 0
 
-  let f = (v : value, i : number, a : value[]) : number => v.daily
-  if (type == 'daily') f = (v, i, a) => v.daily
-  if (type == 'cumulative') f = (v, i, a) => v.cumulative
-  if (type == 'growth') f = (v, i, a) => (i > 0 && a[i - 1].cumulative != 0 ? a[i].daily / a[i - 1].cumulative * 100 : 0)
-  if (type == 'difference') f = (v, i, a) => a[i].daily - (i > 0 ? a[i - 1].daily : 0)
+  const f = type_function(type)
 
-  const palette = distinctColors.default({count: countries.size, chromaMin: 50, lightMin: 50, lightMax: 100})
+  const palette = get_palette(countries.size)
 
   if (chart != undefined && chart.data.datasets != undefined) {
+
     chart.data.labels = labels
     chart.data.datasets.length = 0
+    chart.options.title = {display: true, text: make_title(type, datatype, alignstart)}
 
     countries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
-        let values : number[] | undefined = []
-
-        if (datatype == 'confirmed') values = data.confirmed.get(country.toString())?.map(f)
-        if (datatype == 'recovered') values = data.recovered.get(country.toString())?.map(f)
-        if (datatype == 'deaths') values = data.deaths.get(country.toString())?.map(f)
-        if (datatype == 'cfr') {
-          const confirmed = data.confirmed.get(country.toString())
-          const deaths = data.deaths.get(country.toString())
-
-          const cfr = confirmed?.map((c, idx) => {
-            return {cumulative : deaths ? deaths[idx].cumulative / c.cumulative * 100 : 0, daily : deaths ? deaths[idx].daily / c.daily * 100 : 0}
-          })
-
-          values = cfr?.map(f)
-        }
-
-        if (datatype == 'active') {
-          const confirmed = data.confirmed.get(country.toString())
-          const recovered = data.recovered.get(country.toString())
-          const deaths = data.deaths.get(country.toString())
-
-          const cfr = confirmed?.map((c, idx) => {
-            return { 
-              cumulative : (recovered && deaths) ? (c.cumulative - deaths[idx].cumulative - recovered[idx].cumulative) : 0, 
-              daily : (recovered && deaths) ? (c.daily - deaths[idx].daily - recovered[idx].daily) : 0
-            }
-          })
-
-          values = cfr?.map(f)
-        }
+        const values = get_values(datatype, country.toString(), f)
 
         if (align) while (values && values?.length > 0 && values[1] < parseInt(alignstart))
           values.shift()
@@ -178,33 +237,9 @@ const update_chart = () => {
       }
     })
 
-    if (align) {
-      const labels = []
-      let largest = 0
-      for (let dataset of chart.data.datasets)
-        if (dataset.data && dataset.data.length > largest)
-          largest = dataset.data.length
+    if (align) align_chart()
 
-      for (let i = 0; i < largest; i++)
-        labels.push(`${i}`)
-
-      chart.data.labels = labels
-    }
-
-    chart.options.title = {display: true, text: `${Array.from(countries).join(', ')}`}
-
-    if (scale == 'logarithmic')
-      chart.options.scales = {
-        yAxes: [{
-          type: 'logarithmic',          
-          ticks: {
-              autoSkip: false,
-              callback: function (value, index, values) {
-                return Number.isInteger(Math.log10(value)) || index == 0 ? value : ''
-              }
-          }
-        }]
-      }
+    if (scale == 'logarithmic') logarithmic_chart()      
     else chart.options.scales = undefined
 
     chart.update()
