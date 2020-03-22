@@ -171,7 +171,7 @@ const get_values = (datatype : string, country : string, f : any) => {
     values = cfr?.map(f)
   }
 
-  return values
+  return values ? values : []
 }
 
 const align_chart = () => {
@@ -207,10 +207,29 @@ const logarithmic_chart = () => {
   }
 }
 
+const average = (array : number[]) => array.reduce((sum, value) => sum + value, 0) / array.length
+
+const moving_average = (values : number[], count : number) => {
+  if (count < 2) return values
+
+  const averaged : number[] = []
+  const window : number[] = []
+
+  values.forEach((value) => {
+    window.push(value)
+    if (window.length > count) window.shift()
+    averaged.push(average(window))
+  })
+
+  return averaged
+}
+
 const update_chart = () => {
   const type = (<HTMLSelectElement>document.querySelector('#type')).value
   const scale = (<HTMLSelectElement>document.querySelector('#scale')).value
   const datatype = (<HTMLSelectElement>document.querySelector('#data-type')).value
+
+  const smooth = (<HTMLInputElement>document.querySelector('#smooth')).value
 
   const alignstart = (<HTMLInputElement>document.querySelector('#alignstart')).value
   const align = parseInt(alignstart) > 0
@@ -227,7 +246,7 @@ const update_chart = () => {
 
     countries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
-        const values = get_values(datatype, country.toString(), f)
+        const values = moving_average(get_values(datatype, country.toString(), f), parseInt(smooth))
 
         if (align) while (values && values?.length > 0 && values[1] < parseInt(alignstart))
           values.shift()
@@ -299,5 +318,6 @@ document.querySelector('#scale')?.addEventListener('change', update_chart)
 document.querySelector('#data-type')?.addEventListener('change', update_chart)
 
 document.querySelector('#alignstart')?.addEventListener('input', update_chart)
+document.querySelector('#smooth')?.addEventListener('input', update_chart)
 
 document.querySelector('#scale')?.addEventListener('change', update_chart)
