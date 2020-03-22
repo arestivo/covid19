@@ -117,11 +117,11 @@ const load_data = async (type : 'confirmed' | 'recovered' | 'deaths') => {
   })
 }
 
-const make_title = (type: string, datatype: string, alignstart: string) => {
-  if (parseInt(alignstart) > 0)
-    return `${capitalize(datatype)} (${type}) aligned to first ${alignstart}`
-  else
-    return `${capitalize(datatype)} (${type})`
+const make_title = (type: string, datatype: string, alignstart: string, smooth : string) => {
+  let title = `${capitalize(datatype)} (${type}) `
+  if (parseInt(alignstart) > 0) title += ` aligned to first ${alignstart}`
+  if (parseInt(smooth) > 0) title += ` moving average ${smooth}`
+  return title
 }
 
 const type_function = (type: string) => {
@@ -242,7 +242,7 @@ const update_chart = () => {
 
     chart.data.labels = labels
     chart.data.datasets.length = 0
-    chart.options.title = {display: true, text: make_title(type, datatype, alignstart)}
+    chart.options.title = {display: true, text: make_title(type, datatype, alignstart, smooth)}
 
     countries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
