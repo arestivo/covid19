@@ -25,6 +25,7 @@ form {
 }
 
 canvas {
+  width: 80%;
   max-width: 80em;
   margin: 0 auto;
   background-color: #333;
@@ -37,11 +38,6 @@ div.pure-control {
   justify-items: stretch;
   column-gap: 0.5em;
   row-gap: 0.5em;
-}
-
-form div{
-  display: table;
-  margin: 0 auto;
 }
 
 form input{
@@ -61,7 +57,6 @@ body {
 #alignstart, #smooth {
   margin: 0;
 }
-
 
 @media all and (max-width: 1300px) {
   div.pure-control {
