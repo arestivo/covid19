@@ -210,7 +210,7 @@ const logarithmic_chart = () => {
 const average = (array : number[]) => array.reduce((sum, value) => sum + value, 0) / array.length
 
 const moving_average = (values : number[], count : number) => {
-  if (count < 2) return values
+  if (!count || count < 2) return values
 
   const averaged : number[] = []
   const window : number[] = []
