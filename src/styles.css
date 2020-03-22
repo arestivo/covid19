@@ -1,9 +1,11 @@
 html {
+  height: 90%;
   background-color: #333;
 }
 
 body {
   margin: 0 auto;
+  min-height: 90%;
 }
 
 main {
@@ -42,16 +44,6 @@ div.pure-control {
 
 form input{
   margin: 0.5em;
-}
-
-html {
-  height: 90%;
-}
-
-body {
-  min-height: 90%;
-  display: grid;
-  grid-template-rows: auto 1fr;
 }
 
 #alignstart, #smooth {
