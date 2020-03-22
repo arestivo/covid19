@@ -6,6 +6,9 @@ html {
 body {
   margin: 0 auto;
   min-height: 90%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
 }
 
 main {
