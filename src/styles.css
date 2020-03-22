@@ -24,13 +24,17 @@ h1 {
 
 form {
   max-width: 80em;
-  width: 95%;
   margin: 0 auto;
   padding: 0.5em;
 }
 
+#container {
+  position: relative;
+  height:60vh; width:95vw;
+  margin: 0 auto;
+}
+
 canvas {
-  width: 80%;
   max-width: 80em;
   margin: 0 auto;
   background-color: #333;
@@ -47,6 +51,7 @@ div.pure-control {
 
 form input{
   margin: 0.5em;
+  width: auto;
 }
 
 #alignstart, #smooth {
@@ -65,6 +70,6 @@ form input{
 
 @media all and (max-width: 600px) {
   div.pure-control {
-    grid-template-columns: auto auto;
+    grid-template-columns: 45vw 45vw;
   }
 }

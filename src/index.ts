@@ -64,6 +64,7 @@ const join_data = (original : value[] | undefined, values : value[]) : value[] =
 const fix_country = (country : string) => {
   if (country == 'Mainland China') return 'China'
   if (country == 'Korea, South') return 'South Korea'
+  if (country == 'Saint Vincent and the Grenadines') return 'Saint Vincent'
   return country
 }
 
