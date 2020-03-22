@@ -18,6 +18,7 @@ countries.add('Portugal')
 const create_chart = (type : string) => {
   Chart.defaults.global.defaultFontColor = '#EEE'
   Chart.defaults.scale.gridLines.color = "#666"
+  if (Chart.defaults.global.elements?.point?.radius) Chart.defaults.global.elements.point.radius = 2
 
   const ctx = document.getElementById('chart')
 
