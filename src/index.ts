@@ -152,9 +152,9 @@ const get_values = (datatype : string, country : string, f : any) => {
   if (datatype == 'confirmed') values = data.confirmed.get(country)?.map(f)
   if (datatype == 'recovered') values = data.recovered.get(country)?.map(f)
   if (datatype == 'deaths') values = data.deaths.get(country)?.map(f)
-  if (datatype == 'cfr') {
+  if (datatype == 'mortality') {
     const cfr = confirmed?.map((c, idx) => {
-      return {cumulative : deaths ? deaths[idx].cumulative / c.cumulative * 100 : 0, daily : deaths ? deaths[idx].daily / c.daily * 100 : 0}
+      return {cumulative : deaths ? (c.cumulative == 0 ? 0 : deaths[idx].cumulative / c.cumulative * 100) : 0, daily : deaths ? (c.daily == 0 ? 0 : deaths[idx].daily / c.daily * 100) : 0}
     })
 
     values = cfr?.map(f)
