@@ -7,7 +7,14 @@ body {
 }
 
 main {
-  background-color: #444;
+  background-color: #333;
+}
+
+h1 {
+  color: #EEE;
+  text-align: center;
+  font-size: 1em;
+  margin: 0.5em;
 }
 
 form {
@@ -26,15 +33,10 @@ canvas {
 div.pure-control {
   display: grid;
   grid-template-columns: auto auto auto auto auto auto;
-  align-items: center; 
-  justify-content: center;
+  align-items: stretch; 
+  justify-items: stretch;
   column-gap: 0.5em;
   row-gap: 0.5em;
-}
-
-form div{
-  display: table;
-  margin: 0 auto;
 }
 
 form input{
@@ -51,7 +53,7 @@ body {
   grid-template-rows: auto 1fr;
 }
 
-#alignstart {
+#alignstart, #smooth {
   margin: 0;
 }
 
@@ -70,11 +72,4 @@ body {
   div.pure-control {
     grid-template-columns: auto auto;
   }
-}
-
-h1 {
-  color: #EEE;
-  text-align: center;
-  font-size: 1em;
-  margin: 0.5em;
 }
