@@ -39,6 +39,11 @@ div.pure-control {
   row-gap: 0.5em;
 }
 
+form div{
+  display: table;
+  margin: 0 auto;
+}
+
 form input{
   margin: 0.5em;
 }
