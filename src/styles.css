@@ -70,10 +70,6 @@ body {
   div.pure-control {
     grid-template-columns: auto auto;
   }
-
-  #alignstart {
-    grid-column-start: 2;
-  }
 }
 
 h1 {
