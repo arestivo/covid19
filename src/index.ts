@@ -18,6 +18,7 @@ countries.add('Portugal')
 const create_chart = (type : string) => {
   Chart.defaults.global.defaultFontColor = '#EEE'
   Chart.defaults.scale.gridLines.color = "#666"
+  
   if (Chart.defaults.global.elements?.point?.radius) Chart.defaults.global.elements.point.radius = 2
 
   const ctx = document.getElementById('chart')
@@ -98,6 +99,11 @@ const extract_data = (json : any[]) => {
         worldminuschina[index].cumulative += !isNaN(day.cumulative) ? day.cumulative : 0  
       }
     })
+  })
+
+  data.forEach((country, c) => {
+    if (!country.every(v => v.cumulative == 0))
+      while (country.length > 0 && country[country.length - 1].cumulative == 0 && country[country.length - 1].daily == 0) country.pop() 
   })
 
   data.set('World', world)
