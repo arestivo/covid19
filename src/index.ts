@@ -103,7 +103,7 @@ const extract_data = (json : any[]) => {
 
   data.forEach((country, c) => {
     if (!country.every(v => v.cumulative == 0))
-      while (country.length > 0 && country[country.length - 1].cumulative == 0 && country[country.length - 1].daily == 0) country.pop() 
+      while (country.length > 0 && country[country.length - 1].daily == 0) country.pop() 
   })
 
   data.set('World', world)
