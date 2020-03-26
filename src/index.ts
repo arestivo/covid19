@@ -102,7 +102,10 @@ const type_function = (type: string) => {
     return (v : value, _i : number, _a : value[]) : number => v.daily
 }
 
-const get_palette = (count : number) => distinctColors.default({count, chromaMin: 50, lightMin: 50, lightMax: 100})
+/**
+ * Constructs a palette with a certain number of colors
+ */
+const getPalette = (count : number) => distinctColors.default({count, chromaMin: 50, lightMin: 50, lightMax: 100})
 
 /*const get_values = (datatype : string, country : string, f : any) => {
   let values : number[] | undefined = []
@@ -284,7 +287,7 @@ const updateChart = () => {
 
   const f = type_function(type)
 
-  const palette = get_palette(selectedCountries.size)
+  const palette = getPalette(selectedCountries.size)
 
   if (chart != undefined && chart.data.datasets != undefined) {
     chart.data.labels = extractLabels()
@@ -357,15 +360,10 @@ const toggleCountry = () => {
  * Compares two countries based on being selected or number of cases.
  */
  const compareCountries = (c1 : country, c2 : country) => {
-  const v1 = data.get(c1.Slug)?.confirmed || []
-  const v2 = data.get(c2.Slug)?.confirmed || []
-
   if (selectedCountries.has(c1.Slug) && !selectedCountries.has(c2.Slug)) return -1
   if (selectedCountries.has(c2.Slug) && !selectedCountries.has(c1.Slug)) return 1
 
-  if (v1.length == 0 || v2.length == 0) return v2.length - v1.length
-
-  return v2[v2.length - 1].Cases - v1[v1.length - 1].Cases
+  return c2.summary.TotalConfirmed - c1.summary.TotalConfirmed
 }
 
 /**
@@ -388,20 +386,38 @@ const updateCountries = () => {
 
 let chart = createChart()
 
+type summary = { Country : string, Slug : string, NewConfirmed : number, TotalConfirmed : number, NewDeaths : number, TotalDeaths : number, NewRecovered : number, TotalRecovered : number } 
 type singleData = { Country : string, Province : string, Lat : number, Lon : number, Date : string, Cases : number, Status : string } 
 type countryData = { confirmed : singleData[], deaths : singleData[], recovered : singleData[] } 
-type country = { Country : string, Provinces : string[], Slug : string }
+type country = { Country : string, Provinces : string[], Slug : string, summary : summary }
 
 const countries : Map<string, country> = new Map
 const data : Map<string, countryData> = new Map
 
 const selectedCountries : Set<string> = new Set
 
+/**
+ * Loads the summary for each country from https://api.covid19api.com/summary
+ */
+const loadSummary = async () => {
+  fetch(`https://api.covid19api.com/summary`)
+    .then(response => response.json())
+    .then(response => response.Countries.forEach((summary : summary) => {
+      const country = countries.get(summary.Slug)
+      if (country) country.summary = summary
+    }))
+    .then(updateCountries)
+}
+
+/**
+ * Loads the list of countries from https://api.covid19api.com/countries
+ */
 const loadCountries = async () => {
   fetch(`https://api.covid19api.com/countries`)
     .then(response => response.json())
+    .then(response => response.filter((country : country) => country.Slug != ''))
     .then(response => response.forEach((country : country) => countries.set(country.Slug, country)))
-    .then(updateCountries)
+    .then(loadSummary)
 }
 
 document.querySelector('#country')?.addEventListener('change', toggleCountry)
