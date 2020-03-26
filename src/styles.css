@@ -23,7 +23,7 @@ h1 {
 }
 
 form {
-  max-width: 80em;
+  max-width: 60em;
   margin: 0 auto;
   padding: 0.5em;
 }
@@ -35,7 +35,7 @@ form {
 }
 
 canvas {
-  max-width: 80em;
+  max-width: 60em;
   margin: 0 auto;
   background-color: #333;
 }
