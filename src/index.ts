@@ -86,58 +86,10 @@ const makeTitle = (type: string, datatype: string, alignStart: number, smooth : 
   return title
 }
 
-const type_function = (type: string) => {
-  if (type == 'daily') 
-    return (v: value, _i: number, _a: value[]) => v.daily
-  
-  if (type == 'cumulative') 
-    return (v: value, _i: number, _a: value[]) => v.cumulative
-  
-  if (type == 'growth') 
-    return (_v: value, i: number, a: value[]) => (i > 0 && a[i - 1].cumulative != 0 ? a[i].daily / a[i - 1].cumulative * 100 : 0)
-  
-  if (type == 'difference') 
-    return (_v: value, i: number, a: value[]) => a[i].daily - (i > 0 ? a[i - 1].daily : 0)
-  
-    return (v : value, _i : number, _a : value[]) : number => v.daily
-}
-
 /**
  * Constructs a palette with a certain number of colors
  */
 const getPalette = (count : number) => distinctColors.default({count, chromaMin: 50, lightMin: 50, lightMax: 100})
-
-/*const get_values = (datatype : string, country : string, f : any) => {
-  let values : number[] | undefined = []
-
-  const confirmed = data.confirmed.get(country)
-  const recovered = data.recovered.get(country)
-  const deaths = data.deaths.get(country)
-
-  if (datatype == 'confirmed') values = data.confirmed.get(country)?.map(f)
-  if (datatype == 'recovered') values = data.recovered.get(country)?.map(f)
-  if (datatype == 'deaths') values = data.deaths.get(country)?.map(f)
-  if (datatype == 'mortality') {
-    const cfr = confirmed?.map((c, idx) => {
-      return {cumulative : deaths ? (c.cumulative == 0 ? 0 : deaths[idx].cumulative / c.cumulative * 100) : 0, daily : deaths ? (c.daily == 0 ? 0 : deaths[idx].daily / c.daily * 100) : 0}
-    })
-
-    values = cfr?.map(f)
-  }
-
-  if (datatype == 'active') {
-    const cfr = confirmed?.map((c, idx) => {
-      return { 
-        cumulative : (recovered && deaths) ? (c.cumulative - deaths[idx].cumulative - recovered[idx].cumulative) : 0, 
-        daily : (recovered && deaths) ? (c.daily - deaths[idx].daily - recovered[idx].daily) : 0
-      }
-    })
-
-    values = cfr?.map(f)
-  }
-
-  return values ? values : []
-} */
 
 /**
  * Make chart use a logarithmic scale
@@ -167,7 +119,7 @@ const average = (array : number[]) => array.reduce((sum, value) => sum + value, 
  * @param values The array
  * @param count Window size
  */
-const movingAverage = (values : number[], count : number) => {
+const movingAverage = (values : number[], count : number) : number[] => {
   if (!count || count < 2) return values
 
   const averaged : number[] = []
@@ -198,6 +150,16 @@ const createChart = () => {
     options: { responsive: true, maintainAspectRatio: false, tooltips: { mode: 'index' }}
   })
 }
+
+const aggregateValues = (type : string, values: number[]) => {
+  const daily = values.map((value, idx) => idx == 0 ? value : value - values[idx - 1])
+  const growth = values.map((_, idx) => idx == 0 ? 0 : daily[idx] / values[idx - 1] * 100)
+
+  if (type == 'daily') return daily
+  if (type == 'growth') return growth
+
+  return values
+} 
 
 /**
  * Extracts values from JSON data for a single country aligned to
@@ -285,8 +247,6 @@ const updateChart = () => {
   const smooth = parseInt((<HTMLInputElement>document.querySelector('#smooth')).value)
   const alignStart = parseInt((<HTMLInputElement>document.querySelector('#alignstart')).value)
 
-  const f = type_function(type)
-
   const palette = getPalette(selectedCountries.size)
 
   if (chart != undefined && chart.data.datasets != undefined) {
@@ -297,9 +257,9 @@ const updateChart = () => {
 
     selectedCountries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
-        const values = movingAverage(extractValues(country, datatype, <string[]>chart.data.labels, alignStart), smooth)
+        const values = movingAverage(aggregateValues(type, extractValues(country, datatype, <string[]>chart.data.labels, alignStart)), smooth)
         
-        if (alignStart > 0) while (values.length > 0 && values[0] == 0) values.shift()
+        if (alignStart > 0) while (values.length > 0 && (values[0] == 0 || isNaN(values[0]))) values.shift()
 
         const color = palette[chart.data.datasets.length].hex()
         chart.data.datasets.push({ label: countries.get(country)?.Country, data: values, fill: false, backgroundColor: color, borderColor: color, borderWidth: 1.5})
