@@ -363,7 +363,7 @@ const toggleCountry = () => {
   if (selectedCountries.has(c1.Slug) && !selectedCountries.has(c2.Slug)) return -1
   if (selectedCountries.has(c2.Slug) && !selectedCountries.has(c1.Slug)) return 1
 
-  return c2.summary.TotalConfirmed - c1.summary.TotalConfirmed
+  return c2.TotalConfirmed - c1.TotalConfirmed
 }
 
 /**
@@ -386,10 +386,9 @@ const updateCountries = () => {
 
 let chart = createChart()
 
-type summary = { Country : string, Slug : string, NewConfirmed : number, TotalConfirmed : number, NewDeaths : number, TotalDeaths : number, NewRecovered : number, TotalRecovered : number } 
+type country = { Country : string, Slug : string, NewConfirmed : number, TotalConfirmed : number, NewDeaths : number, TotalDeaths : number, NewRecovered : number, TotalRecovered : number } 
 type singleData = { Country : string, Province : string, Lat : number, Lon : number, Date : string, Cases : number, Status : string } 
 type countryData = { confirmed : singleData[], deaths : singleData[], recovered : singleData[] } 
-type country = { Country : string, Provinces : string[], Slug : string, summary : summary }
 
 const countries : Map<string, country> = new Map
 const data : Map<string, countryData> = new Map
@@ -397,27 +396,14 @@ const data : Map<string, countryData> = new Map
 const selectedCountries : Set<string> = new Set
 
 /**
- * Loads the summary for each country from https://api.covid19api.com/summary
- */
-const loadSummary = async () => {
-  fetch(`https://api.covid19api.com/summary`)
-    .then(response => response.json())
-    .then(response => response.Countries.forEach((summary : summary) => {
-      const country = countries.get(summary.Slug)
-      if (country) country.summary = summary
-    }))
-    .then(updateCountries)
-}
-
-/**
- * Loads the list of countries from https://api.covid19api.com/countries
+ * Loads the list of countries from https://api.covid19api.com/summary
  */
 const loadCountries = async () => {
-  fetch(`https://api.covid19api.com/countries`)
+  fetch(`https://api.covid19api.com/summary`)
     .then(response => response.json())
-    .then(response => response.filter((country : country) => country.Slug != ''))
+    .then(response => response.Countries.filter((country : country) => country.Slug != ''))
     .then(response => response.forEach((country : country) => countries.set(country.Slug, country)))
-    .then(loadSummary)
+    .then(updateCountries)
 }
 
 document.querySelector('#country')?.addEventListener('change', toggleCountry)
