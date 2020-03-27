@@ -7,64 +7,6 @@ import * as Chart from 'chart.js'
 
 const distinctColors = require ('distinct-colors')
 
-interface value { daily : number ; cumulative : number }
-
-const join_data = (original : value[] | undefined, values : value[]) : value[] => {
-  if (original == undefined) return values
-  return original.map(function (o, i) { 
-    return { daily: o.daily + (isNaN(values[i].daily) ? 0 : values[i].daily), cumulative: o.cumulative + (isNaN(values[i].cumulative) ? 0 : values[i].cumulative)}
-  })
-}
-
-const fix_country = (country : string) => {
-  if (country == 'Mainland China') return 'China'
-  if (country == 'Korea, South') return 'South Korea'
-  if (country == 'Saint Vincent and the Grenadines') return 'Saint Vincent'
-  return country
-}
-
-const extract_data = (json : any[]) => {
-  const data : Map<string, value[]> = new Map
-  json.forEach(line => {
-    const state = line[0]
-    const country = fix_country(line[1])
-
-    if (country == undefined) return
-
-    const values = line.splice(4).map((v : string) => parseInt(v)).map(function (_v : number, i : number, a : []) : value {
-      return {daily : a[i] - (i > 0 ? a[i - 1] : 0), cumulative : a[i]}
-    })
-    if (state != '') data.set(country, join_data(data.get(country), values))
-    else data.set(country, values)
-  })
-
-  const world : value[] = []
-  const worldminuschina : value[] = []
-
-  data.forEach((country, c) => {
-    country.forEach((day, index) => {
-      while (world.length <= index) world.push({daily: 0, cumulative: 0})
-      while (worldminuschina.length <= index) worldminuschina.push({daily: 0, cumulative: 0})
-      world[index].daily += !isNaN(day.daily) ? day.daily : 0
-      world[index].cumulative += !isNaN(day.cumulative) ? day.cumulative : 0
-      if (c != 'China') {
-        worldminuschina[index].daily += !isNaN(day.daily) ? day.daily : 0
-        worldminuschina[index].cumulative += !isNaN(day.cumulative) ? day.cumulative : 0  
-      }
-    })
-  })
-
-  data.forEach((country, c) => {
-    if (!country.every(v => v.cumulative == 0))
-      while (country.length > 0 && country[country.length - 1].daily == 0) country.pop() 
-  })
-
-  data.set('World', world)
-  data.set('World minus China', worldminuschina)
-
-  return data
-}
-
 const capitalize = (s : string) => {
   if (typeof s !== 'string') return ''
   return s.charAt(0).toUpperCase() + s.slice(1)
@@ -151,6 +93,11 @@ const createChart = () => {
   })
 }
 
+/**
+ * Aggregate chart value as cumulative, daily or growth (%)
+ * @param type the type of aggregation
+ * @param values the values to aggregate
+ */
 const aggregateValues = (type : string, values: number[]) => {
   const daily = values.map((value, idx) => idx == 0 ? value : value - values[idx - 1])
   const growth = values.map((_, idx) => idx == 0 ? 0 : daily[idx] / values[idx - 1] * 100)
@@ -344,17 +291,6 @@ const updateCountries = () => {
   })
 } 
 
-let chart = createChart()
-
-type country = { Country : string, Slug : string, NewConfirmed : number, TotalConfirmed : number, NewDeaths : number, TotalDeaths : number, NewRecovered : number, TotalRecovered : number } 
-type singleData = { Country : string, Province : string, Lat : number, Lon : number, Date : string, Cases : number, Status : string } 
-type countryData = { confirmed : singleData[], deaths : singleData[], recovered : singleData[] } 
-
-const countries : Map<string, country> = new Map
-const data : Map<string, countryData> = new Map
-
-const selectedCountries : Set<string> = new Set
-
 /**
  * Loads the list of countries from https://api.covid19api.com/summary
  */
@@ -367,6 +303,15 @@ const loadCountries = async () => {
     .then(updateCountries)
 }
 
+type country = { Country : string, Slug : string, NewConfirmed : number, TotalConfirmed : number, NewDeaths : number, TotalDeaths : number, NewRecovered : number, TotalRecovered : number } 
+type singleData = { Country : string, Province : string, Lat : number, Lon : number, Date : string, Cases : number, Status : string } 
+type countryData = { confirmed : singleData[], deaths : singleData[], recovered : singleData[] } 
+
+const countries : Map<string, country> = new Map
+const data : Map<string, countryData> = new Map
+
+const selectedCountries : Set<string> = new Set
+
 document.querySelector('#country')?.addEventListener('change', toggleCountry)
 document.querySelector('#type')?.addEventListener('change', updateChart)
 document.querySelector('#scale')?.addEventListener('change', updateChart)
@@ -377,4 +322,5 @@ document.querySelector('#smooth')?.addEventListener('input', updateChart)
 
 document.querySelector('#scale')?.addEventListener('change', updateChart)
 
+const chart = createChart()
 loadCountries()
