@@ -1,6 +1,11 @@
+:root {
+  --bg-color: #264653;
+  --fg-color: #e76f51;
+}
+
 html {
   height: 90%;
-  background-color: #333;
+  background-color: var(--bg-color);
 }
 
 body {
@@ -12,11 +17,11 @@ body {
 }
 
 main {
-  background-color: #333;
+  background-color: var(--bg-color);
 }
 
 h1 {
-  color: #EEE;
+  color: var(--fg-color);
   text-align: center;
   font-size: 1em;
   margin: 0.5em;
@@ -37,7 +42,7 @@ form {
 canvas {
   max-width: 60em;
   margin: 0 auto;
-  background-color: #333;
+  background-color: var(--bg-color);
 }
 
 div.pure-control {
