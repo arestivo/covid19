@@ -1,6 +1,5 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: './src/index.ts',
@@ -25,15 +24,10 @@ module.exports = {
         ]
       },
       {
-        test: /\.png$/,
+        test: /\.(png|gif)$/,
         use: [
-          {
-            loader: 'url-loader',
-            options: {
-              mimetype: 'image/png'
-            }
-          }
-        ]
+          'css-loader'
+        ],
       }
     ]
   },
@@ -49,10 +43,5 @@ module.exports = {
       filename: 'index.html',
       template: 'src/index.html',
     }),
-    new CopyPlugin([
-      { from: 'data/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv', to: 'data/confirmed.csv' },
-      { from: 'data/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv', to: 'data/deaths.csv' },
-      { from: 'data/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv', to: 'data/recovered.csv' },
-    ]),
   ],
 }

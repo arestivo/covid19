@@ -331,7 +331,7 @@ const toggleCountry = () => {
  */
 const updateCountries = () => {
   const existing = Array.from(countries.values()).sort((c1, c2) => compareCountries(c1, c2))
-  const select = document.querySelector('#country')
+  const select = <HTMLSelectElement>document.querySelector('#country')
   
   if (select) 
     select.innerHTML = '<option value="" disabled selected hidden>Countries...</option>'
@@ -359,6 +359,7 @@ const selectedCountries : Set<string> = new Set
  * Loads the list of countries from https://api.covid19api.com/summary
  */
 const loadCountries = async () => {
+  document.querySelector('#loader')?.setAttribute('display', 'inline')
   fetch(`https://api.covid19api.com/summary`)
     .then(response => response.json())
     .then(response => response.Countries.filter((country : country) => country.Slug != ''))
