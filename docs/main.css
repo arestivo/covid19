@@ -64,17 +64,21 @@ canvas {
 }
 
 div.pure-control {
-  display: grid;
-  grid-template-columns: auto auto auto auto auto auto;
-  align-items: stretch; 
-  justify-items: stretch;
+  display: flex;
   column-gap: 0.5em;
   row-gap: 0.5em;
+  flex-wrap: wrap;
 }
+
+div.pure-control > *{
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 6em;
+}
+
 
 form input{
   margin: 0.5em;
-  width: auto;
 }
 
 #alignstart, #smooth {
