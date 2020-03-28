@@ -1,6 +1,6 @@
 :root {
   --bg-color: #264653;
-  --fg-color: #e76f51;
+  --fg-color: #8acdea;
 }
 
 html {
@@ -50,6 +50,7 @@ div.pure-control {
   column-gap: 0.5em;
   row-gap: 0.5em;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 div.pure-control > *{
@@ -57,7 +58,6 @@ div.pure-control > *{
   flex-shrink: 1;
   flex-basis: 6em;
 }
-
 
 form input{
   margin: 0.5em;
