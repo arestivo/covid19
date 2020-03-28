@@ -20,6 +20,8 @@ const capitalize = (s : string) => {
  * @param smooth 
  */
 const makeTitle = (type: string, datatype: string, alignStart: number, smooth : number) => {
+  if (datatype == 'recovered-percentage') datatype = 'recovered (%)'
+
   let title = `${capitalize(datatype)} (${type}) `
 
   if (alignStart > 0) title += ` aligned to first ${alignStart}`
@@ -131,13 +133,23 @@ const extractValues = (country : string, datatype : string, dates : string[], al
         }
       }
       break
-    case 'mortality':
+      case 'mortality':
+        for (let i = 0; i < (data.get(country)?.confirmed?.length || 0); i++) {
+          const deaths = <singleData>{ ...data.get(country)?.deaths[i] } // cloning
+          if (deaths) {
+            deaths.Cases /= data.get(country)?.confirmed[i]?.Cases || 0
+            deaths.Cases *= 100
+            values.push(deaths)
+          }
+        }
+        break
+    case 'recovered-percentage':
       for (let i = 0; i < (data.get(country)?.confirmed?.length || 0); i++) {
-        const deaths = <singleData>{ ...data.get(country)?.deaths[i] } // cloning
-        if (deaths) {
-          deaths.Cases /= data.get(country)?.confirmed[i]?.Cases || 0
-          deaths.Cases *= 100
-          values.push(deaths)
+        const recovered = <singleData>{ ...data.get(country)?.recovered[i] } // cloning
+        if (recovered) {
+          recovered.Cases /= data.get(country)?.confirmed[i]?.Cases || 0
+          recovered.Cases *= 100
+          values.push(recovered)
         }
       }
       break
