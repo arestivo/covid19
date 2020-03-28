@@ -79,6 +79,7 @@ div.pure-control > *{
 
 form input{
   margin: 0.5em;
+  max-width: 10em;
 }
 
 #alignstart, #smooth {
