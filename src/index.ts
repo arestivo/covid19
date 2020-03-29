@@ -267,7 +267,7 @@ const updateChart = () => {
 
     if (chart.options.annotation) {
       chart.options.annotation.annotations = [1]
-      if (type == 'growth')
+      if (type == 'growth' && ['confirmed', 'recovered', 'deaths'].includes(datatype))
       for (let d = 1; d < 10; d++) {
         if (d > 5) d++
         if ((Math.pow(2, (1 / d)) - 1) * 100 > min && (Math.pow(2, (1 / d)) - 1) * 100 < max)
