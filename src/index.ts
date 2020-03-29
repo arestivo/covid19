@@ -105,21 +105,6 @@ const createChart = () => {
 }
 
 /**
- * Aggregate chart value as cumulative, daily or growth (%)
- * @param type the type of aggregation
- * @param values the values to aggregate
- */
-const aggregateValues = (type: string, values: number[]) => {
-/*  const daily = values.map((value, idx) => idx == 0 ? value : value - values[idx - 1])
-  const growth = values.map((_, idx) => idx == 0 ? 0 : daily[idx] / values[idx - 1] * 100)
-
-  if (type == 'daily') return daily.slice(1)
-  if (type == 'growth') return growth.slice(1)
-*/
-  return values
-}
-
-/**
  * Extracts values from JSON data for a single country aligned to
  * predetermined labels
  * @param country The country to extract data from
