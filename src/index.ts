@@ -282,7 +282,7 @@ const updateChart = () => {
                 backgroundColor: '#26465399',
                 position: 'left',
                 enabled: true,
-                content: `x2/${d}d`
+                content: `2x/${d}d`
               }
             }
           )
