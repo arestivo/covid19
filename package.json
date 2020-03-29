@@ -18,6 +18,7 @@
   "dependencies": {
     "@types/chart.js": "^2.9.15",
     "chart.js": "^2.9.3",
+    "chartjs-plugin-annotation": "^0.5.7",
     "distinct-colors": "^2.1.0",
     "purecss": "^1.0.1"
   },

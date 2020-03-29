@@ -4,10 +4,12 @@ import 'purecss/build/grids-responsive-min.css'
 import './styles.css'
 
 import * as Chart from 'chart.js'
+import * as ChartAnnotation from 'chartjs-plugin-annotation'
+Chart.plugins.register(ChartAnnotation)
 
-const distinctColors = require ('distinct-colors')
+const distinctColors = require('distinct-colors')
 
-const capitalize = (s : string) => {
+const capitalize = (s: string) => {
   if (typeof s !== 'string') return ''
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
@@ -19,7 +21,7 @@ const capitalize = (s : string) => {
  * @param alignStart 
  * @param smooth 
  */
-const makeTitle = (type: string, datatype: string, alignStart: number, smooth : number) => {
+const makeTitle = (type: string, datatype: string, alignStart: number, smooth: number) => {
   if (datatype == 'recovered-percentage') datatype = 'recovered (%)'
 
   let title = `${capitalize(datatype)} (${type}) `
@@ -33,21 +35,21 @@ const makeTitle = (type: string, datatype: string, alignStart: number, smooth : 
 /**
  * Constructs a palette with a certain number of colors
  */
-const getPalette = (count : number) => distinctColors.default({count, chromaMin: 50, lightMin: 50, lightMax: 100})
+const getPalette = (count: number) => distinctColors.default({ count, chromaMin: 50, lightMin: 50, lightMax: 100 })
 
 /**
  * Make chart use a logarithmic scale
  * @param chart 
  */
-const logarithmicChart = (chart : Chart) => {
+const logarithmicChart = (chart: Chart) => {
   chart.options.scales = {
     yAxes: [{
-      type: 'logarithmic',          
+      type: 'logarithmic',
       ticks: {
-          autoSkip: false,
-          callback: function (value, index, _values) {
-            return Number.isInteger(Math.log10(value)) || index == 0 ? value : ''
-          }
+        autoSkip: false,
+        callback: function (value, index, _values) {
+          return Number.isInteger(Math.log10(value)) || index == 0 ? value : ''
+        }
       }
     }]
   }
@@ -56,18 +58,18 @@ const logarithmicChart = (chart : Chart) => {
 /** 
  * Calculates the average value of an array 
  */
-const average = (array : number[]) => array.reduce((sum, value) => sum + value, 0) / array.length
+const average = (array: number[]) => array.reduce((sum, value) => sum + value, 0) / array.length
 
 /**
  * Returns the moving average of an array
  * @param values The array
  * @param count Window size
  */
-const movingAverage = (values : number[], count : number) : number[] => {
+const movingAverage = (values: number[], count: number): number[] => {
   if (!count || count < 2) return values
 
-  const averaged : number[] = []
-  const window : number[] = []
+  const averaged: number[] = []
+  const window: number[] = []
 
   values.forEach((value) => {
     window.push(value)
@@ -84,14 +86,21 @@ const movingAverage = (values : number[], count : number) : number[] => {
 const createChart = () => {
   Chart.defaults.global.defaultFontColor = '#EEE'
   Chart.defaults.scale.gridLines.color = "#666"
-  
+
   if (Chart.defaults.global.elements?.point?.radius) Chart.defaults.global.elements.point.radius = 2
 
   const ctx = <HTMLCanvasElement>document.getElementById('chart')
 
   return new Chart(ctx, {
     type: 'line', data: { labels: [], datasets: [] },
-    options: { responsive: true, maintainAspectRatio: false, tooltips: { mode: 'index' }}
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      tooltips: { mode: 'index' },
+      annotation: {
+        annotations: [1]
+      }
+    }
   })
 }
 
@@ -100,25 +109,25 @@ const createChart = () => {
  * @param type the type of aggregation
  * @param values the values to aggregate
  */
-const aggregateValues = (type : string, values: number[]) => {
-  const daily = values.map((value, idx) => idx == 0 ? value : value - values[idx - 1])
+const aggregateValues = (type: string, values: number[]) => {
+/*  const daily = values.map((value, idx) => idx == 0 ? value : value - values[idx - 1])
   const growth = values.map((_, idx) => idx == 0 ? 0 : daily[idx] / values[idx - 1] * 100)
 
-  if (type == 'daily') return daily
-  if (type == 'growth') return growth
-
+  if (type == 'daily') return daily.slice(1)
+  if (type == 'growth') return growth.slice(1)
+*/
   return values
-} 
+}
 
 /**
  * Extracts values from JSON data for a single country aligned to
  * predetermined labels
  * @param country The country to extract data from
  */
-const extractValues = (country : string, datatype : string, dates : string[], alignStart : number) => {
+const extractValues = (country: string, datatype: string, dates: string[], alignStart: number, type : string) => {
   const confirmed = data.get(country)?.confirmed
-  const values = []
-  
+  let values : singleData[] = []
+
   switch (datatype) {
     case 'confirmed': values.push(...Array.from(data.get(country)?.confirmed || [])); break
     case 'deaths': values.push(...Array.from(data.get(country)?.deaths || [])); break
@@ -133,16 +142,16 @@ const extractValues = (country : string, datatype : string, dates : string[], al
         }
       }
       break
-      case 'mortality':
-        for (let i = 0; i < (data.get(country)?.confirmed?.length || 0); i++) {
-          const deaths = <singleData>{ ...data.get(country)?.deaths[i] } // cloning
-          if (deaths) {
-            deaths.Cases /= data.get(country)?.confirmed[i]?.Cases || 0
-            deaths.Cases *= 100
-            values.push(deaths)
-          }
+    case 'mortality':
+      for (let i = 0; i < (data.get(country)?.confirmed?.length || 0); i++) {
+        const deaths = <singleData>{ ...data.get(country)?.deaths[i] } // cloning
+        if (deaths) {
+          deaths.Cases /= data.get(country)?.confirmed[i]?.Cases || 0
+          deaths.Cases *= 100
+          values.push(deaths)
         }
-        break
+      }
+      break
     case 'recovered-percentage':
       for (let i = 0; i < (data.get(country)?.confirmed?.length || 0); i++) {
         const recovered = <singleData>{ ...data.get(country)?.recovered[i] } // cloning
@@ -153,9 +162,29 @@ const extractValues = (country : string, datatype : string, dates : string[], al
         }
       }
       break
-    }
+  }
 
-  const result : Map<string, number> = new Map 
+  values = JSON.parse(JSON.stringify(values)) // cloning
+
+  if (type == 'growth') {
+    let last = NaN 
+    values?.forEach((v, idx) => {
+      const temp = v.Cases
+      v.Cases = (idx == 0 ? 0 : (v.Cases - last) / last * 100)
+      last = temp
+    })  
+  }
+
+  if (type == 'daily') {
+    let last = NaN 
+    values?.forEach((v, idx) => {
+      const temp = v.Cases
+      v.Cases = (idx == 0 ? 0 : v.Cases - last)
+      last = temp
+    })  
+  }
+
+  const result: Map<string, number> = new Map
 
   dates.forEach(date => result.set(date, 0))
 
@@ -171,7 +200,7 @@ const extractValues = (country : string, datatype : string, dates : string[], al
  * Extracts an array of dates from JSON data for a single country
  * @param country The country to extract dates from
  */
-const extractDates = (country : string) => {
+const extractDates = (country: string) => {
   const values = data.get(country)?.confirmed
 
   return values?.map(value => value.Date.substring(0, 10)) || []
@@ -181,7 +210,7 @@ const extractDates = (country : string) => {
  * Extracts date labels for the selected countries
  */
 const extractLabels = () => {
-  const dates : Set<string> = new Set
+  const dates: Set<string> = new Set
   selectedCountries.forEach((country) => extractDates(country).forEach(dates.add, dates))
   return Array.from(dates).sort()
 }
@@ -190,7 +219,7 @@ const extractLabels = () => {
  * Align chart labels
  * @param datasets 
  */
-const alignLabels = (datasets : Chart.ChartDataSets[]) => {
+const alignLabels = (datasets: Chart.ChartDataSets[]) => {
   const largest = datasets.reduce((max, dataset) => Math.max(max, dataset.data?.length || 0), 0)
   return Array.from(Array(largest).keys())
 }
@@ -208,27 +237,58 @@ const updateChart = () => {
 
   const palette = getPalette(selectedCountries.size)
 
+  let min = Number.MAX_VALUE
+  let max = Number.MIN_VALUE
+
   if (chart != undefined && chart.data.datasets != undefined) {
     chart.data.labels = extractLabels()
 
     chart.data.datasets.length = 0
-    chart.options.title = {display: true, text: makeTitle(type, datatype, alignStart, smooth)}
+    chart.options.title = { display: true, text: makeTitle(type, datatype, alignStart, smooth) }
 
     selectedCountries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
-        const values = movingAverage(aggregateValues(type, extractValues(country, datatype, <string[]>chart.data.labels, alignStart)), smooth)
-        
+        const values = movingAverage(extractValues(country, datatype, <string[]>chart.data.labels, alignStart, type), smooth)
+
         if (alignStart > 0) while (values.length > 0 && (values[0] == 0 || isNaN(values[0]))) values.shift()
 
+        min = Math.min(min, ...values.filter(v => v != 0 && v != Infinity && !isNaN(v)))
+        max = Math.max(max, ...values.filter(v => v != 0 && v != Infinity && !isNaN(v)))
+
         const color = palette[chart.data.datasets.length].hex()
-        chart.data.datasets.push({ label: countries.get(country)?.Country, data: values, fill: false, backgroundColor: color, borderColor: color, borderWidth: 1.5})
+        chart.data.datasets.push({ label: countries.get(country)?.Country, data: values, fill: false, backgroundColor: color, borderColor: color, borderWidth: 1.5 })
       }
     })
 
     if (alignStart > 0) chart.data.labels = alignLabels(chart.data.datasets)
 
-    if (scale == 'logarithmic') logarithmicChart(chart)      
+    if (scale == 'logarithmic') logarithmicChart(chart)
     else chart.options.scales = undefined
+
+    if (chart.options.annotation) {
+      chart.options.annotation.annotations = [1]
+      if (type == 'growth')
+      for (let d = 1; d < 10; d++) {
+        if (d > 5) d++
+        if ((Math.pow(2, (1 / d)) - 1) * 100 > min && (Math.pow(2, (1 / d)) - 1) * 100 < max)
+          chart.options.annotation.annotations.push(
+            {
+              value: (Math.pow(2, (1 / d)) - 1) * 100,
+              type: 'line',
+              mode: 'horizontal',
+              scaleID: 'y-axis-0',
+              borderColor: 'white',
+              borderWidth: 1,
+              label: {
+                backgroundColor: 'rgba(0,0,0,0.0)',
+                position: 'left',
+                enabled: true,
+                content: `doubles every ${d} days`
+              }
+            }
+          )
+      }
+    }
 
     chart.update()
   }
@@ -238,14 +298,14 @@ const updateChart = () => {
  * Load data from covid19api.com for a single country
  * @param country The country to load
  */
-const loadCountry = async (country : string)  => {
-  const confirmed : Promise<singleData[]> = fetch(`https://api.covid19api.com/total/country/${country}/status/confirmed`)
+const loadCountry = async (country: string) => {
+  const confirmed: Promise<singleData[]> = fetch(`https://api.covid19api.com/total/country/${country}/status/confirmed`)
     .then(response => response.json())
 
-  const deaths : Promise<singleData[]> = fetch(`https://api.covid19api.com/total/country/${country}/status/deaths`)
+  const deaths: Promise<singleData[]> = fetch(`https://api.covid19api.com/total/country/${country}/status/deaths`)
     .then(response => response.json())
 
-  const recovered : Promise<singleData[]> = fetch(`https://api.covid19api.com/total/country/${country}/status/recovered`)
+  const recovered: Promise<singleData[]> = fetch(`https://api.covid19api.com/total/country/${country}/status/recovered`)
     .then(response => response.json())
 
   return Promise.all([confirmed, deaths, recovered])
@@ -270,7 +330,7 @@ const toggleCountry = () => {
 
   if (!data.get(country))
     loadCountry(country)
-      .then(response => data.set(country, { confirmed : response[0], deaths : response[1], recovered : response[2] }))
+      .then(response => data.set(country, { confirmed: response[0], deaths: response[1], recovered: response[2] }))
       .then(updateChart)
   else updateChart()
 }
@@ -278,7 +338,7 @@ const toggleCountry = () => {
 /**
  * Compares two countries based on being selected or number of cases.
  */
- const compareCountries = (c1 : country, c2 : country) => {
+const compareCountries = (c1: country, c2: country) => {
   if (selectedCountries.has(c1.Slug) && !selectedCountries.has(c2.Slug)) return -1
   if (selectedCountries.has(c2.Slug) && !selectedCountries.has(c1.Slug)) return 1
 
@@ -291,17 +351,17 @@ const toggleCountry = () => {
 const updateCountries = () => {
   const existing = Array.from(countries.values()).sort((c1, c2) => compareCountries(c1, c2))
   const select = <HTMLSelectElement>document.querySelector('#country')
-  
-  if (select) 
+
+  if (select)
     select.innerHTML = '<option value="" disabled selected hidden>Countries...</option>'
-  
+
   existing.forEach(country => {
     const option = <HTMLOptionElement>document.createElement('OPTION')
     option.innerText = country.Country.concat(selectedCountries.has(country.Slug) ? ' *' : '')
     option.value = country.Slug
     select?.appendChild(option)
   })
-} 
+}
 
 /**
  * Loads the list of countries from https://api.covid19api.com/summary
@@ -310,19 +370,19 @@ const loadCountries = async () => {
   document.querySelector('#loader')?.setAttribute('display', 'inline')
   fetch(`https://api.covid19api.com/summary`)
     .then(response => response.json())
-    .then(response => response.Countries.filter((country : country) => country.Slug != ''))
-    .then(response => response.forEach((country : country) => countries.set(country.Slug, country)))
+    .then(response => response.Countries.filter((country: country) => country.Slug != ''))
+    .then(response => response.forEach((country: country) => countries.set(country.Slug, country)))
     .then(updateCountries)
 }
 
-type country = { Country : string, Slug : string, NewConfirmed : number, TotalConfirmed : number, NewDeaths : number, TotalDeaths : number, NewRecovered : number, TotalRecovered : number } 
-type singleData = { Country : string, Province : string, Lat : number, Lon : number, Date : string, Cases : number, Status : string } 
-type countryData = { confirmed : singleData[], deaths : singleData[], recovered : singleData[] } 
+type country = { Country: string, Slug: string, NewConfirmed: number, TotalConfirmed: number, NewDeaths: number, TotalDeaths: number, NewRecovered: number, TotalRecovered: number }
+type singleData = { Country: string, Province: string, Lat: number, Lon: number, Date: string, Cases: number, Status: string }
+type countryData = { confirmed: singleData[], deaths: singleData[], recovered: singleData[] }
 
-const countries : Map<string, country> = new Map
-const data : Map<string, countryData> = new Map
+const countries: Map<string, country> = new Map
+const data: Map<string, countryData> = new Map
 
-const selectedCountries : Set<string> = new Set
+const selectedCountries: Set<string> = new Set
 
 document.querySelector('#country')?.addEventListener('change', toggleCountry)
 document.querySelector('#type')?.addEventListener('change', updateChart)
