@@ -279,7 +279,7 @@ const updateChart = () => {
               borderColor: 'white',
               borderWidth: 1,
               label: {
-                backgroundColor: '#264653',
+                backgroundColor: '#26465399',
                 position: 'left',
                 enabled: true,
                 content: `doubles every ${d} days`
