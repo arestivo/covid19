@@ -43,6 +43,9 @@ const getPalette = (count: number) => distinctColors.default({ count, chromaMin:
  */
 const logarithmicChart = (chart: Chart) => {
   chart.options.scales = {
+    xAxes: [{
+      type: 'time',
+    }],
     yAxes: [{
       type: 'logarithmic',
       ticks: {
@@ -51,6 +54,18 @@ const logarithmicChart = (chart: Chart) => {
           return Number.isInteger(Math.log10(value)) || index == 0 ? value : ''
         }
       }
+    }]
+  }
+}
+
+/**
+ * Make chart use a linear scale
+ * @param chart 
+ */
+const linearChart = (char: Chart) => {
+  chart.options.scales = {
+    xAxes: [{
+      type: 'time',
     }]
   }
 }
@@ -109,14 +124,17 @@ const createChart = () => {
  * predetermined labels
  * @param country The country to extract data from
  */
-const extractValues = (country: string, datatype: string, dates: string[], alignStart: number, type : string) => {
+const extractValues = (country: string, datatype: string, dates: string[], alignStart: number, aligntype : string, type : string) => {
   const confirmed = data.get(country)?.confirmed
+  const deaths = data.get(country)?.deaths
+  const recovered = data.get(country)?.recovered
+
   let values : singleData[] = []
 
   switch (datatype) {
-    case 'confirmed': values.push(...Array.from(data.get(country)?.confirmed || [])); break
-    case 'deaths': values.push(...Array.from(data.get(country)?.deaths || [])); break
-    case 'recovered': values.push(...Array.from(data.get(country)?.recovered || [])); break
+    case 'confirmed': values.push(...Array.from(confirmed || [])); break
+    case 'deaths': values.push(...Array.from(deaths || [])); break
+    case 'recovered': values.push(...Array.from(recovered || [])); break
     case 'active':
       for (let i = 0; i < (data.get(country)?.confirmed?.length || 0); i++) {
         const confirmed = <singleData>{ ...data.get(country)?.confirmed[i] } // cloning
@@ -173,9 +191,12 @@ const extractValues = (country: string, datatype: string, dates: string[], align
 
   dates.forEach(date => result.set(date, 0))
 
-  if (alignStart > 0 && confirmed && values) {
+  if (alignStart > 0 && aligntype == 'confirmed' && confirmed && values) {
     for (let i = 0; i < confirmed.length && i < values.length; i++)
       if (confirmed[i].Cases > alignStart) result.set(confirmed[i].Date.substring(0, 10), values[i].Cases)
+  } else if (alignStart > 0 && aligntype == 'deaths' && deaths && values) {
+    for (let i = 0; i < deaths.length && i < values.length; i++)
+      if (deaths[i].Cases > alignStart) result.set(deaths[i].Date.substring(0, 10), values[i].Cases)
   } else values?.forEach(d => result.set(d.Date.substring(0, 10), d.Cases))
 
   return Array.from(result.values())
@@ -219,6 +240,7 @@ const updateChart = () => {
 
   const smooth = parseInt((<HTMLInputElement>document.querySelector('#smooth')).value)
   const alignStart = parseInt((<HTMLInputElement>document.querySelector('#alignstart')).value)
+  const alignType = (<HTMLInputElement>document.querySelector('#aligntype')).value
 
   const palette = getPalette(selectedCountries.size)
 
@@ -233,9 +255,9 @@ const updateChart = () => {
 
     selectedCountries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
-        const values = movingAverage(extractValues(country, datatype, <string[]>chart.data.labels, alignStart, type), smooth)
+        const values = movingAverage(extractValues(country, datatype, <string[]>chart.data.labels, alignStart, alignType, type), smooth)
 
-        if (alignStart > 0) while (values.length > 0 && (values[0] == 0 || isNaN(values[0]))) values.shift()
+        if (alignStart > 0 && alignType != '') while (values.length > 0 && (values[0] == 0 || isNaN(values[0]))) values.shift()
 
         min = Math.min(min, ...values.filter(v => v != 0 && v != Infinity && !isNaN(v)))
         max = Math.max(max, ...values.filter(v => v != 0 && v != Infinity && !isNaN(v)))
@@ -245,10 +267,11 @@ const updateChart = () => {
       }
     })
 
-    if (alignStart > 0) chart.data.labels = alignLabels(chart.data.datasets)
+    if (alignStart > 0 && alignType != '') chart.data.labels = alignLabels(chart.data.datasets)
 
     if (scale == 'logarithmic') logarithmicChart(chart)
-    else chart.options.scales = undefined
+    else if (alignStart > 0 && alignType != '') chart.options.scales = undefined
+    else linearChart(chart)
 
     if (chart.options.annotation) {
       chart.options.annotation.annotations = [1]
@@ -374,6 +397,8 @@ document.querySelector('#scale')?.addEventListener('change', updateChart)
 document.querySelector('#data-type')?.addEventListener('change', updateChart)
 
 document.querySelector('#alignstart')?.addEventListener('input', updateChart)
+document.querySelector('#aligntype')?.addEventListener('input', updateChart)
+
 document.querySelector('#smooth')?.addEventListener('input', updateChart)
 
 document.querySelector('#scale')?.addEventListener('change', updateChart)
