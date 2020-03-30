@@ -21,12 +21,12 @@ const capitalize = (s: string) => {
  * @param alignStart 
  * @param smooth 
  */
-const makeTitle = (type: string, datatype: string, alignStart: number, smooth: number) => {
+const makeTitle = (type: string, datatype: string, alignStart: number, alignType: string, smooth: number) => {
   if (datatype == 'recovered-percentage') datatype = 'recovered (%)'
 
   let title = `${capitalize(datatype)} (${type}) `
 
-  if (alignStart > 0) title += ` aligned to first ${alignStart}`
+  if (alignStart > 0 && alignType != '') title += ` aligned to first ${alignStart} ${alignType}`
   if (smooth > 0) title += ` moving average ${smooth}`
 
   return title
@@ -251,7 +251,7 @@ const updateChart = () => {
     chart.data.labels = extractLabels()
 
     chart.data.datasets.length = 0
-    chart.options.title = { display: true, text: makeTitle(type, datatype, alignStart, smooth) }
+    chart.options.title = { display: true, text: makeTitle(type, datatype, alignStart, alignType, smooth) }
 
     selectedCountries.forEach((country) => {
       if (chart != undefined && chart.data.datasets != undefined) {
