@@ -41,10 +41,10 @@ const getPalette = (count: number) => distinctColors.default({ count, chromaMin:
  * Make chart use a logarithmic scale
  * @param chart 
  */
-const logarithmicChart = (chart: Chart) => {
+const logarithmicChart = (chart: Chart, aligned: boolean) => {
   chart.options.scales = {
     xAxes: [{
-      type: 'time',
+      type: aligned ? undefined : 'time',
     }],
     yAxes: [{
       type: 'logarithmic',
@@ -62,10 +62,10 @@ const logarithmicChart = (chart: Chart) => {
  * Make chart use a linear scale
  * @param chart 
  */
-const linearChart = (char: Chart) => {
+const linearChart = (char: Chart, aligned: boolean) => {
   chart.options.scales = {
     xAxes: [{
-      type: 'time',
+      type: aligned ? undefined : 'time',
     }]
   }
 }
@@ -269,9 +269,8 @@ const updateChart = () => {
 
     if (alignStart > 0 && alignType != '') chart.data.labels = alignLabels(chart.data.datasets)
 
-    if (scale == 'logarithmic') logarithmicChart(chart)
-    else if (alignStart > 0 && alignType != '') chart.options.scales = undefined
-    else linearChart(chart)
+    if (scale == 'logarithmic') logarithmicChart(chart, alignStart > 0 && alignType != '')
+    else linearChart(chart, alignStart > 0 && alignType != '')
 
     if (chart.options.annotation) {
       chart.options.annotation.annotations = [1]
