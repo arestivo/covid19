@@ -124,12 +124,12 @@ const createChart = () => {
  * predetermined labels
  * @param country The country to extract data from
  */
-const extractValues = (country: string, datatype: string, dates: string[], alignStart: number, aligntype : string, type : string) => {
+const extractValues = (country: string, datatype: string, dates: string[], alignStart: number, aligntype: string, type: string) => {
   const confirmed = data.get(country)?.confirmed
   const deaths = data.get(country)?.deaths
   const recovered = data.get(country)?.recovered
 
-  let values : singleData[] = []
+  let values: singleData[] = []
 
   switch (datatype) {
     case 'confirmed': values.push(...Array.from(confirmed || [])); break
@@ -170,21 +170,21 @@ const extractValues = (country: string, datatype: string, dates: string[], align
   values = JSON.parse(JSON.stringify(values)) // cloning
 
   if (type == 'growth') {
-    let last = NaN 
+    let last = NaN
     values?.forEach((v, idx) => {
       const temp = v.Cases
       v.Cases = (idx == 0 ? 0 : (v.Cases - last) / last * 100)
       last = temp
-    })  
+    })
   }
 
   if (type == 'daily') {
-    let last = NaN 
+    let last = NaN
     values?.forEach((v, idx) => {
       const temp = v.Cases
       v.Cases = (idx == 0 ? 0 : v.Cases - last)
       last = temp
-    })  
+    })
   }
 
   const result: Map<string, number> = new Map
@@ -275,27 +275,28 @@ const updateChart = () => {
     if (chart.options.annotation) {
       chart.options.annotation.annotations = [1]
       if (type == 'growth' && ['confirmed', 'recovered', 'deaths'].includes(datatype))
-      [1, 2, 3, 5, 10].forEach(d => {
-        if ((Math.pow(2, (1 / d)) - 1) * 100 > min && (Math.pow(2, (1 / d)) - 1) * 100 < max)
-          chart.options.annotation?.annotations.push(
-            {
-              value: (Math.pow(2, (1 / d)) - 1) * 100,
-              type: 'line',
-              mode: 'horizontal',
-              scaleID: 'y-axis-0',
-              borderColor: 'white',
-              borderWidth: 1,
-              label: {
-                backgroundColor: '#26465399',
-                position: 'left',
-                enabled: true,
-                content: `2x/${d}d`
+        [1, 2, 3, 5, 10].forEach(d => {
+          if ((Math.pow(2, (1 / d)) - 1) * 100 > min && (Math.pow(2, (1 / d)) - 1) * 100 < max)
+            chart.options.annotation?.annotations.push(
+              {
+                value: (Math.pow(2, (1 / d)) - 1) * 100,
+                type: 'line',
+                mode: 'horizontal',
+                scaleID: 'y-axis-0',
+                borderColor: 'white',
+                borderWidth: 1,
+                label: {
+                  backgroundColor: '#26465399',
+                  position: 'left',
+                  enabled: true,
+                  content: `2x/${d}d`
+                }
               }
-            }
-          )
-      })
+            )
+        })
     }
 
+    saveQuery()
     chart.update()
   }
 }
@@ -369,6 +370,46 @@ const updateCountries = () => {
   })
 }
 
+const saveQuery = () => {
+  const type = (<HTMLSelectElement>document.querySelector('#type')).value
+  const datatype = (<HTMLSelectElement>document.querySelector('#data-type')).value
+  const scale = (<HTMLSelectElement>document.querySelector('#scale')).value
+  const alignstart = (<HTMLSelectElement>document.querySelector('#alignstart')).value
+  const aligntype = (<HTMLSelectElement>document.querySelector('#aligntype')).value
+  const smooth = (<HTMLSelectElement>document.querySelector('#smooth')).value
+
+  const countries = Array.from(selectedCountries).join('+')
+
+  window.location.hash = `${countries}&${type}&${datatype}&${scale}&${alignstart}&${aligntype}&${smooth}`
+}
+
+const loadQuery = async () => {
+  const hash = window.location.hash.slice(1)
+  const parts = hash.split('&')
+
+  const countries = parts[0].split('+')
+
+  const type = <HTMLSelectElement>document.querySelector('#type')
+  const datatype = <HTMLSelectElement>document.querySelector('#data-type')
+  const scale = <HTMLSelectElement>document.querySelector('#scale')
+  const alignstart = <HTMLSelectElement>document.querySelector('#alignstart')
+  const aligntype = <HTMLSelectElement>document.querySelector('#aligntype')
+  const smooth = <HTMLSelectElement>document.querySelector('#smooth');
+
+  [type, datatype, scale, alignstart, aligntype, smooth].forEach((input, i) => { if (parts[i + 1]) input.value = parts[i + 1] })
+
+  for (let i = 0; i < countries.length; i++) {
+    const country = countries[i]
+    const response = await loadCountry(country)
+
+    data.set(country, { confirmed: response[0], deaths: response[1], recovered: response[2] })
+    selectedCountries.add(country)
+  }
+
+  updateCountries()
+  updateChart()
+}
+
 /**
  * Loads the list of countries from https://api.covid19api.com/summary
  */
@@ -379,6 +420,7 @@ const loadCountries = async () => {
     .then(response => response.Countries.filter((country: country) => country.Slug != ''))
     .then(response => response.forEach((country: country) => countries.set(country.Slug, country)))
     .then(updateCountries)
+    .then(loadQuery)
 }
 
 type country = { Country: string, Slug: string, NewConfirmed: number, TotalConfirmed: number, NewDeaths: number, TotalDeaths: number, NewRecovered: number, TotalRecovered: number }

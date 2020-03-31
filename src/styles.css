@@ -13,7 +13,7 @@ body {
   min-height: 90%;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
 }
 
 main {
@@ -25,6 +25,11 @@ h1 {
   text-align: center;
   font-size: 1em;
   margin: 0.5em;
+}
+
+#about, #about > a {
+  text-align: center;
+  color: #999;
 }
 
 form {
