@@ -380,12 +380,12 @@ const saveQuery = () => {
 
   const countries = Array.from(selectedCountries).join('+')
 
-  window.location.hash = `${countries}&${type}&${datatype}&${scale}&${alignstart}&${aligntype}&${smooth}`
+  window.location.hash = `${countries}|${type}|${datatype}|${scale}|${alignstart}|${aligntype}|${smooth}`
 }
 
 const loadQuery = async () => {
   const hash = window.location.hash.slice(1)
-  const parts = hash.split('&')
+  const parts = hash.split('|')
 
   const countries = parts[0].split('+')
 
@@ -399,11 +399,12 @@ const loadQuery = async () => {
   [type, datatype, scale, alignstart, aligntype, smooth].forEach((input, i) => { if (parts[i + 1]) input.value = parts[i + 1] })
 
   for (let i = 0; i < countries.length; i++) {
-    const country = countries[i]
-    const response = await loadCountry(country)
+    if (countries[i] != '') {
+      const response = await loadCountry(countries[i])
 
-    data.set(country, { confirmed: response[0], deaths: response[1], recovered: response[2] })
-    selectedCountries.add(country)
+      data.set(countries[i], { confirmed: response[0], deaths: response[1], recovered: response[2] })
+      selectedCountries.add(countries[i])  
+    }
   }
 
   updateCountries()
