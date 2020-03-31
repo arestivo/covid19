@@ -306,6 +306,8 @@ const updateChart = () => {
  * @param country The country to load
  */
 const loadCountry = async (country: string) => {
+  if (!countries.get(country)) return undefined
+
   const confirmed: Promise<singleData[]> = fetch(`https://api.covid19api.com/total/country/${country}/status/confirmed`)
     .then(response => response.json())
 
@@ -337,7 +339,7 @@ const toggleCountry = () => {
 
   if (!data.get(country))
     loadCountry(country)
-      .then(response => data.set(country, { confirmed: response[0], deaths: response[1], recovered: response[2] }))
+      .then(response => { console.log(response) ; if (response) data.set(country, { confirmed: response[0], deaths: response[1], recovered: response[2] })})
       .then(updateChart)
   else updateChart()
 }
@@ -401,9 +403,10 @@ const loadQuery = async () => {
   for (let i = 0; i < countries.length; i++) {
     if (countries[i] != '') {
       const response = await loadCountry(countries[i])
-
-      data.set(countries[i], { confirmed: response[0], deaths: response[1], recovered: response[2] })
-      selectedCountries.add(countries[i])  
+      if (response) {
+        data.set(countries[i], { confirmed: response[0], deaths: response[1], recovered: response[2] })
+        selectedCountries.add(countries[i])
+      }
     }
   }
 
