@@ -380,12 +380,12 @@ const saveQuery = () => {
 
   const countries = Array.from(selectedCountries).join('+')
 
-  window.location.hash = `${countries}|${type}|${datatype}|${scale}|${alignstart}|${aligntype}|${smooth}`
+  window.location.hash = `${countries}/${type}/${datatype}/${scale}/${alignstart}/${aligntype}/${smooth}`
 }
 
 const loadQuery = async () => {
   const hash = window.location.hash.slice(1)
-  const parts = hash.split('|')
+  const parts = hash.split('/')
 
   const countries = parts[0].split('+')
 
