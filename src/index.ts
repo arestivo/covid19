@@ -339,7 +339,7 @@ const toggleCountry = () => {
 
   if (!data.get(country))
     loadCountry(country)
-      .then(response => { console.log(response) ; if (response) data.set(country, { confirmed: response[0], deaths: response[1], recovered: response[2] })})
+      .then(response => { if (response) data.set(country, { confirmed: response[0], deaths: response[1], recovered: response[2] })})
       .then(updateChart)
   else updateChart()
 }
@@ -372,6 +372,7 @@ const updateCountries = () => {
   })
 }
 
+let savingQuery = false
 const saveQuery = () => {
   const type = (<HTMLSelectElement>document.querySelector('#type')).value
   const datatype = (<HTMLSelectElement>document.querySelector('#data-type')).value
@@ -382,10 +383,12 @@ const saveQuery = () => {
 
   const countries = Array.from(selectedCountries).join('+')
 
-  window.location.hash = `${countries}/${type}/${datatype}/${scale}/${alignstart}/${aligntype}/${smooth}`
+  savingQuery = true
+  window.location.hash = `${countries}/${type}/${datatype}/${scale}/${alignstart}/${aligntype}/${smooth}`  
 }
 
 const loadQuery = async () => {
+  if (savingQuery) { savingQuery = false; return; }
   const hash = window.location.hash.slice(1)
   const parts = hash.split('/')
 
@@ -437,16 +440,8 @@ const data: Map<string, countryData> = new Map
 const selectedCountries: Set<string> = new Set
 
 document.querySelector('#country')?.addEventListener('change', toggleCountry)
-document.querySelector('#type')?.addEventListener('change', updateChart)
-document.querySelector('#scale')?.addEventListener('change', updateChart)
-document.querySelector('#data-type')?.addEventListener('change', updateChart)
-
-document.querySelector('#alignstart')?.addEventListener('input', updateChart)
-document.querySelector('#aligntype')?.addEventListener('input', updateChart)
-
-document.querySelector('#smooth')?.addEventListener('input', updateChart)
-
-document.querySelector('#scale')?.addEventListener('change', updateChart)
+document.querySelectorAll('#type, #scale, #data-type, #alignstart, #aligntype, #smooth, #scale').forEach(e => e.addEventListener('change', updateChart))
+window.addEventListener('hashchange', loadQuery, true)
 
 const chart = createChart()
 loadCountries()
